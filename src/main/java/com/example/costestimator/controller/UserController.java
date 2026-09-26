@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.costestimator.service.*;
+import com.example.costestimator.dto.LoginRequest;
+import com.example.costestimator.dto.LoginResponse;
 import com.example.costestimator.dto.SignupRequest;
 
 @RestController
@@ -20,5 +22,10 @@ public class UserController {
   @ResponseStatus(HttpStatus.CREATED)
   public void signup(@RequestBody SignupRequest request) {
     userService.signup(request);
+  }
+
+  @PostMapping("auth/login")
+  public LoginResponse login(@RequestBody LoginRequest request) {
+    return userService.login(request);
   }
 }
