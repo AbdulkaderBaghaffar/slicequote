@@ -17,6 +17,7 @@ public class Upload {
   private Long materialId;
   private BigDecimal estimatedPrice;
   private Instant createdAt;
+  private Long ownerId;
 
   public Upload() {
   }
@@ -59,6 +60,14 @@ public class Upload {
 
   public void setCreatedAt(Instant createdAt) {
     this.createdAt = createdAt;
+  }
+
+  public Long getOwnerId() {
+    return ownerId;
+  }
+
+  public void setOwnerId(Long ownerId) {
+    this.ownerId = ownerId;
   }
 
 }
