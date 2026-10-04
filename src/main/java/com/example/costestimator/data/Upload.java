@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Upload {
@@ -14,7 +15,8 @@ public class Upload {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   private String filename; // to be changed later in M4 for actual file type
-  private Long materialId;
+  @ManyToOne
+  private Material materialId;
   private BigDecimal estimatedPrice;
   private Instant createdAt;
   private Long ownerId;
@@ -38,11 +40,11 @@ public class Upload {
     this.filename = filename;
   }
 
-  public Long getMaterialId() {
+  public Material getMaterial() {
     return materialId;
   }
 
-  public void setMaterialId(Long materialId) {
+  public void setMaterial(Material materialId) {
     this.materialId = materialId;
   }
 

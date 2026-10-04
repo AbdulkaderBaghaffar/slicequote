@@ -8,10 +8,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.example.costestimator.data.Material;
 import com.example.costestimator.data.Upload;
+import com.example.costestimator.repository.MaterialRepository;
 import com.example.costestimator.repository.UploadRepository;
 import com.example.costestimator.repository.UserRepository;
-
+import com.example.costestimator.dto.UploadRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -21,10 +24,13 @@ public class UploadController {
 
   private final UploadRepository uploadRepository;
   private final UserRepository userRepository;
+  private final MaterialRepository materialRepository;
 
-  public UploadController(UploadRepository uploadRepository, UserRepository userRepository) {
+  public UploadController(UploadRepository uploadRepository, UserRepository userRepository,
+      MaterialRepository materialRepository) {
     this.uploadRepository = uploadRepository;
     this.userRepository = userRepository;
+    this.materialRepository = materialRepository;
   }
 
   @GetMapping("/uploads") // when get request at materials return this
@@ -39,17 +45,22 @@ public class UploadController {
 
   @PostMapping("/uploads")
   @ResponseStatus(HttpStatus.CREATED)
-  public Upload addUpload(@RequestBody Upload upload, Authentication authentication) { // return type material from JSON
-                                                                                       // made from Upload
-    // object
+  public Upload addUpload(@RequestBody UploadRequest request, Authentication authentication) {
 
-    upload.setEstimatedPrice(new BigDecimal("10.00")); // tmp
-    upload.setCreatedAt(Instant.now());
+    Material material = materialRepository.findById(request.materialId())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
     Long ownerId = userRepository.findByEmail(authentication.getName())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED))
         .getId();
+
+    Upload upload = new Upload();
+    upload.setFilename(request.filename());
+    upload.setMaterial(material);
     upload.setOwnerId(ownerId);
-    ;
+    upload.setEstimatedPrice(new BigDecimal("10.00"));
+    upload.setCreatedAt(Instant.now());
+
     return uploadRepository.save(upload);
   }
 }
