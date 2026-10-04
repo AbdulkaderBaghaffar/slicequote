@@ -28,8 +28,12 @@ public class UploadController {
   }
 
   @GetMapping("/uploads") // when get request at materials return this
-  public List<Upload> listUploads() {
-    return uploadRepository.findAll();
+  public List<Upload> listUploads(Authentication authentication) {
+    Long ownerId = userRepository.findByEmail(authentication.getName())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED))
+        .getId();
+
+    return uploadRepository.findByOwnerId(ownerId);
 
   }
 
