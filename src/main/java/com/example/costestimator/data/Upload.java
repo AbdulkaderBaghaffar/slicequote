@@ -11,12 +11,18 @@ import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Upload {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private String filename; // to be changed later in M4 for actual file type
+
+  private String originalFilename;
+  private UploadStatus status = UploadStatus.PENDING;
+  private String errorMessage;
+
   @ManyToOne
-  private Material materialId;
+  private Material material;
+
   private BigDecimal estimatedPrice;
   private Instant createdAt;
   private Long ownerId;
@@ -32,20 +38,36 @@ public class Upload {
     this.id = id;
   }
 
-  public String getFilename() {
-    return filename;
+  public String getOriginalFilename() {
+    return originalFilename;
   }
 
-  public void setFilename(String filename) {
-    this.filename = filename;
+  public void setOriginalFilename(String originalFilename) {
+    this.originalFilename = originalFilename;
+  }
+
+  public UploadStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(UploadStatus status) {
+    this.status = status;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
   }
 
   public Material getMaterial() {
-    return materialId;
+    return material;
   }
 
-  public void setMaterial(Material materialId) {
-    this.materialId = materialId;
+  public void setMaterial(Material material) {
+    this.material = material;
   }
 
   public BigDecimal getEstimatedPrice() {
@@ -71,5 +93,4 @@ public class Upload {
   public void setOwnerId(Long ownerId) {
     this.ownerId = ownerId;
   }
-
 }
