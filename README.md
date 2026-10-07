@@ -4,7 +4,6 @@
 
 
 
-**Live:** https://slicequote.abdulkaderbaghaffar.com 
 ---
 
 
