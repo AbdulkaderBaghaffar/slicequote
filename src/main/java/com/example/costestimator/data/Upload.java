@@ -26,6 +26,7 @@ public class Upload {
   private BigDecimal estimatedPrice;
   private Instant createdAt;
   private Long ownerId;
+  private String storedFilename;
 
   public Upload() {
   }
@@ -92,5 +93,13 @@ public class Upload {
 
   public void setOwnerId(Long ownerId) {
     this.ownerId = ownerId;
+  }
+
+  public String getFilename() {
+    return storedFilename;
+  }
+
+  public void setFilename(String storedFilename) {
+    this.storedFilename = storedFilename;
   }
 }
