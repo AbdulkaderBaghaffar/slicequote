@@ -82,4 +82,10 @@ public class UploadService {
         u.getErrorMessage(),
         u.getCreatedAt());
   }
+
+  public UploadResponse getUpload(Long id, Long ownerId) {
+    return uploadRepository.findByIdandOwnerId(id, ownerId)
+        .map(this::toResponse)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+  }
 }

@@ -6,6 +6,7 @@ import com.example.costestimator.service.UploadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -37,10 +38,15 @@ public class UploadController {
     return uploadService.listUploads(currentOwnerId(auth));
   }
 
+  @GetMapping("/uploads/{id}")
+  public UploadResponse getUpload(@PathVariable Long id, Authentication auth) {
+    return uploadService.getUpload(id, currentOwnerId(auth));
+  }
+
   @PostMapping("/uploads")
   @ResponseStatus(HttpStatus.CREATED)
   public UploadResponse addUpload(@RequestParam("file") MultipartFile file, @RequestParam Long materialId,
-      Authentication authentication) {
-    return uploadService.addUpload(file, materialId, currentOwnerId(authentication));
+      Authentication auth) {
+    return uploadService.addUpload(file, materialId, currentOwnerId(auth));
   }
 }
