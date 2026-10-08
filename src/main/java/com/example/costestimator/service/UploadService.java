@@ -84,7 +84,7 @@ public class UploadService {
   }
 
   public UploadResponse getUpload(Long id, Long ownerId) {
-    return uploadRepository.findByIdandOwnerId(id, ownerId)
+    return uploadRepository.findByIdAndOwnerId(id, ownerId)
         .map(this::toResponse)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
   }
