@@ -1,66 +1,52 @@
 package com.example.costestimator.controller;
 
+import com.example.costestimator.dto.UploadResponse;
+import com.example.costestimator.repository.UserRepository;
+import com.example.costestimator.service.UploadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import com.example.costestimator.data.Material;
-import com.example.costestimator.data.Upload;
-import com.example.costestimator.repository.MaterialRepository;
-import com.example.costestimator.repository.UploadRepository;
-import com.example.costestimator.repository.UserRepository;
-import com.example.costestimator.dto.UploadRequest;
-import java.math.BigDecimal;
-import java.time.Instant;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController // defines class as HTTP request and retuns method output as json
 public class UploadController {
 
-  private final UploadRepository uploadRepository;
+  private final UploadService uploadService;
   private final UserRepository userRepository;
-  private final MaterialRepository materialRepository;
 
-  public UploadController(UploadRepository uploadRepository, UserRepository userRepository,
-      MaterialRepository materialRepository) {
-    this.uploadRepository = uploadRepository;
+  public UploadController(UploadService uploadService, UserRepository userRepository) {
+    this.uploadService = uploadService;
     this.userRepository = userRepository;
-    this.materialRepository = materialRepository;
+
+  }
+
+  private Long currentOwnerId(Authentication auth) {
+    return userRepository.findByEmail(auth.getName())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED))
+        .getId();
   }
 
   @GetMapping("/uploads") // when get request at materials return this
-  public List<Upload> listUploads(Authentication authentication) {
-    Long ownerId = userRepository.findByEmail(authentication.getName())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED))
-        .getId();
+  public List<UploadResponse> listUploads(Authentication auth) {
+    return uploadService.listUploads(currentOwnerId(auth));
+  }
 
-    return uploadRepository.findByOwnerId(ownerId);
-
+  @GetMapping("/uploads/{id}")
+  public UploadResponse getUpload(@PathVariable Long id, Authentication auth) {
+    return uploadService.getUpload(id, currentOwnerId(auth));
   }
 
   @PostMapping("/uploads")
   @ResponseStatus(HttpStatus.CREATED)
-  public Upload addUpload(@RequestBody UploadRequest request, Authentication authentication) {
-
-    Material material = materialRepository.findById(request.materialId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-    Long ownerId = userRepository.findByEmail(authentication.getName())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED))
-        .getId();
-
-    Upload upload = new Upload();
-    upload.setFilename(request.filename());
-    upload.setMaterial(material);
-    upload.setOwnerId(ownerId);
-    upload.setEstimatedPrice(new BigDecimal("10.00"));
-    upload.setCreatedAt(Instant.now());
-
-    return uploadRepository.save(upload);
+  public UploadResponse addUpload(@RequestParam("file") MultipartFile file, @RequestParam Long materialId,
+      Authentication auth) {
+    return uploadService.addUpload(file, materialId, currentOwnerId(auth));
   }
 }
