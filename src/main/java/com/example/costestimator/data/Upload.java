@@ -20,6 +20,10 @@ public class Upload {
   private UploadStatus status = UploadStatus.PENDING;
   private String errorMessage;
 
+  private Long printSeconds;
+  private BigDecimal filamentCm3;
+  private String slicerVersion;
+
   @ManyToOne
   private Material material;
 
@@ -61,6 +65,30 @@ public class Upload {
 
   public void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
+  }
+
+  public Long getPrintSeconds() {
+    return printSeconds;
+  }
+
+  public void setPrintSeconds(Long printSeconds) {
+    this.printSeconds = printSeconds;
+  }
+
+  public BigDecimal getFilamentCm3() {
+    return filamentCm3;
+  }
+
+  public void setFilamentCm3(BigDecimal filamentCm3) {
+    this.filamentCm3 = filamentCm3;
+  }
+
+  public String getSlicerVersion() {
+    return slicerVersion;
+  }
+
+  public void setSlicerVersion(String slicerVersion) {
+    this.slicerVersion = slicerVersion;
   }
 
   public Material getMaterial() {
