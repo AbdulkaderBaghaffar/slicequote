@@ -1,17 +1,4 @@
-
 package com.example.costestimator.service;
-
-import com.example.costestimator.data.Material;
-import com.example.costestimator.data.Upload;
-import com.example.costestimator.data.UploadStatus;
-import com.example.costestimator.dto.UploadResponse;
-import com.example.costestimator.repository.MaterialRepository;
-import com.example.costestimator.repository.UploadRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,21 +7,37 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.costestimator.data.Material;
+import com.example.costestimator.data.Upload;
+import com.example.costestimator.data.UploadStatus;
+import com.example.costestimator.dto.UploadResponse;
+import com.example.costestimator.repository.MaterialRepository;
+import com.example.costestimator.repository.UploadRepository;
+
 @Service
 public class UploadService {
 
   private final UploadRepository uploadRepository;
   private final MaterialRepository materialRepository;
   private final StlValidator stlValidator;
+  private final UploadWorker uploadWorker;
   private final String storageRoot;
 
   public UploadService(UploadRepository uploadRepository,
       MaterialRepository materialRepository,
       StlValidator stlValidator,
+      UploadWorker uploadWorker,
       @Value("${storage.root}") String storageRoot) {
     this.uploadRepository = uploadRepository;
     this.materialRepository = materialRepository;
     this.stlValidator = stlValidator;
+    this.uploadWorker = uploadWorker;
     this.storageRoot = storageRoot;
   }
 
@@ -48,7 +51,6 @@ public class UploadService {
     if (!stlValidator.validate(file)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "not a valid STL");
     }
-
     Material material = materialRepository.findById(materialId)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "unknown material"));
 
@@ -69,7 +71,15 @@ public class UploadService {
     upload.setOwnerId(ownerId);
     upload.setCreatedAt(Instant.now());
 
-    return toResponse(uploadRepository.save(upload));
+    Upload saved = uploadRepository.save(upload);
+    uploadWorker.process(saved.getId());
+    return toResponse(saved);
+  }
+
+  public UploadResponse getUpload(Long id, Long ownerId) {
+    return uploadRepository.findByIdAndOwnerId(id, ownerId)
+        .map(this::toResponse)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
   }
 
   private UploadResponse toResponse(Upload u) {
@@ -80,12 +90,8 @@ public class UploadService {
         u.getStatus(),
         u.getEstimatedPrice(),
         u.getErrorMessage(),
-        u.getCreatedAt());
-  }
-
-  public UploadResponse getUpload(Long id, Long ownerId) {
-    return uploadRepository.findByIdAndOwnerId(id, ownerId)
-        .map(this::toResponse)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        u.getCreatedAt(),
+        u.getPrintSeconds(),
+        u.getFilamentCm3());
   }
 }
