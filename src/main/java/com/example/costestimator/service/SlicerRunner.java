@@ -36,7 +36,7 @@ public class SlicerRunner {
     this.timeout = timeout;
   }
 
-  public SliceResult slice(Path stl) {
+  public SliceResult slice(Path stlPath) {
     Path tmpDir = null;
     try {
       tmpDir = Files.createTempDirectory("slice-");
@@ -48,7 +48,7 @@ public class SlicerRunner {
           "-g",
           "--load", profile.toString(),
           "--output", out.toString(),
-          stl.toAbsolutePath().toString());
+          stlPath.toAbsolutePath().toString());
 
       ProcessBuilder pb = new ProcessBuilder(cmd);
       pb.redirectErrorStream(true);

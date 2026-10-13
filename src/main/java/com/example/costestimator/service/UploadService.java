@@ -90,6 +90,8 @@ public class UploadService {
         u.getStatus(),
         u.getEstimatedPrice(),
         u.getErrorMessage(),
-        u.getCreatedAt());
+        u.getCreatedAt(),
+        u.getPrintSeconds(),
+        u.getFilamentCm3());
   }
 }

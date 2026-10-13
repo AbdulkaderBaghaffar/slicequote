@@ -1,5 +1,7 @@
 package com.example.costestimator.service;
 
+import java.nio.file.Path;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -14,11 +16,16 @@ public class UploadWorker {
 
   private static final Logger log = LoggerFactory.getLogger(UploadWorker.class);
   private static final int MAX_ERROR_LEN = 500;
-
   private final UploadRepository uploadRepository;
+  private final SlicerRunner slicerRunner;
+  private final String storageRoot;
 
-  public UploadWorker(UploadRepository uploadRepository) {
+  public UploadWorker(UploadRepository uploadRepository, SlicerRunner slicerRunner,
+      @Value("${storage.root}") String storageRoot) {
     this.uploadRepository = uploadRepository;
+    this.slicerRunner = slicerRunner;
+    this.storageRoot = storageRoot;
+
   }
 
   @Async
@@ -28,7 +35,13 @@ public class UploadWorker {
       u.setStatus(UploadStatus.PROCESSING);
       uploadRepository.save(u);
 
-      Thread.sleep(3000); // TODO: replace with slicerRunner.slice(path)
+      // TODO: replace with slicerRunner.slice(path)
+      Path path = Path.of(storageRoot, u.getFilename());
+
+      SliceResult result = slicerRunner.slice(path);
+      u.setPrintSeconds(result.seconds());
+      u.setFilamentCm3(result.filamentCm3());
+      u.setSlicerVersion(result.slicerVersion());
 
       u.setStatus(UploadStatus.DONE);
       uploadRepository.save(u);

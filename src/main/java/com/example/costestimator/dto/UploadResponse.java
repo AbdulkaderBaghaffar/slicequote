@@ -11,5 +11,7 @@ public record UploadResponse(
     UploadStatus status,
     BigDecimal estimatedPrice,
     String errorMessage,
-    Instant createdAt) {
+    Instant createdAt,
+    Long printSeconds,
+    BigDecimal filamentCm3) {
 }
