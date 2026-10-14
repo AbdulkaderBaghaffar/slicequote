@@ -42,25 +42,23 @@ public class SlicerRunner {
       tmpDir = Files.createTempDirectory("slice-");
       Path profile = copyProfileTo(tmpDir);
       Path out = tmpDir.resolve("out.gcode");
-
+      Path log = tmpDir.resolve("slicer.log");
       List<String> cmd = List.of(
           slicerPath,
           "-g",
           "--load", profile.toString(),
           "--output", out.toString(),
           stlPath.toAbsolutePath().toString());
-
       ProcessBuilder pb = new ProcessBuilder(cmd);
       pb.redirectErrorStream(true);
+      pb.redirectOutput(log.toFile());
       Process proc = pb.start();
-
-      String output = new String(proc.getInputStream().readAllBytes());
       boolean finished = proc.waitFor(timeout.toSeconds(), TimeUnit.SECONDS);
-
       if (!finished) {
         proc.destroyForcibly();
         throw new IllegalStateException("slicer timed out after " + timeout);
       }
+      String output = Files.readString(log);
       if (proc.exitValue() != 0) {
         throw new IllegalStateException("slicer failed (exit " + proc.exitValue() + "): " + output);
       }
@@ -68,7 +66,6 @@ public class SlicerRunner {
         throw new IllegalStateException("slicer produced no output: " + output);
       }
       return parse(Files.readString(out));
-
     } catch (IOException e) {
       throw new IllegalStateException("could not run slicer: " + e.getMessage(), e);
     } catch (InterruptedException e) {
