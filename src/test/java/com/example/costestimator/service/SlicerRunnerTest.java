@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 class SlicerRunnerTest {
 
-  private final SlicerRunner runner = new SlicerRunner("prusa-slicer", "minimal.ini", Duration.ofSeconds(120));
+  private final SlicerRunner runner = new SlicerRunner("prusa-slicer", "minimal.ini", Duration.ofSeconds(120), 2);
 
   @Test
   void parsesDefaultLayerGcode() throws Exception {
