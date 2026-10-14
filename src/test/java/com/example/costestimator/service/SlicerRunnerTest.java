@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +20,6 @@ class SlicerRunnerTest {
   void parsesDefaultLayerGcode() throws Exception {
     String g = Files.readString(Path.of("src/test/resources/cube.gcode"));
     SliceResult r = runner.parse(g);
-
     assertEquals(834, r.seconds());
     assertEquals(new BigDecimal("3.59"), r.filamentCm3());
     assertEquals("2.9.6", r.slicerVersion());
@@ -30,9 +28,14 @@ class SlicerRunnerTest {
   @Test
   void parsesHalfLayerGcode() throws Exception {
     String g = Files.readString(Path.of("src/test/resources/cube3.gcode"));
-    SliceResult r = runner.parse(g);
+    assertEquals(1411, runner.parse(g).seconds());
+  }
 
-    assertEquals(1411, r.seconds());
+  @Test
+  void parsesHoursMinutesSeconds() {
+    String g = "; estimated printing time (normal mode) = 6h 17m 34s\n"
+        + "; filament used [cm3] = 74.20\n";
+    assertEquals(22654, runner.parse(g).seconds());
   }
 
   @Test
@@ -41,20 +44,18 @@ class SlicerRunnerTest {
   }
 
   @Test
-  void slicesCubeWithRealSlicer() {
+  void slicesRealCube() {
     assumeTrue(slicerInstalled(), "prusa-slicer not on PATH - skipping");
-
-    SliceResult r = runner.slice(Path.of("src/test/resources/cube20.stl"));
-
+    SliceResult r = runner.slice(Path.of("src/test/resources/cube.stl"));
     assertTrue(r.seconds() > 0, "expected a positive print time");
     assertTrue(r.filamentCm3().doubleValue() > 0, "expected positive filament volume");
   }
 
-  private boolean slicerInstalled() {
+  private static boolean slicerInstalled() {
     try {
-      new ProcessBuilder("prusa-slicer", "--help").start();
-      return true;
-    } catch (IOException e) {
+      Process p = new ProcessBuilder("sh", "-c", "command -v prusa-slicer").start();
+      return p.waitFor() == 0;
+    } catch (Exception e) {
       return false;
     }
   }

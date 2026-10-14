@@ -17,7 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import com.example.costestimator.data.Upload;
+import com.example.costestimator.repository.UploadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +95,43 @@ class UploadControllerTest {
 
     HttpResponse<String> res = send("GET", "/uploads/" + id, token("b@test.com"), null, null);
     assertEquals(HttpStatus.NOT_FOUND.value(), res.statusCode());
+  }
+
+  @Autowired
+  UploadRepository uploadRepository;
+
+  @Test
+  void uploadIsSlicedToDone() throws Exception {
+    assumeTrue(slicerInstalled(), "prusa-slicer not on PATH - skipping");
+
+    HttpResponse<String> created = postUpload(materialId, cubeStl(), "cube.stl", token("a@test.com"));
+    assertEquals(201, created.statusCode());
+    long id = jsonNumber(created.body(), "id");
+
+    String status = null;
+    for (int i = 0; i < 60; i++) { // ~30s max
+      status = jsonString(send("GET", "/uploads/" + id, token("a@test.com"), null, null).body(), "status");
+      if (!status.equals("PENDING") && !status.equals("PROCESSING"))
+        break;
+      Thread.sleep(500);
+    }
+    assertEquals("DONE", status);
+
+    Upload row = uploadRepository.findById(id).orElseThrow();
+    assertTrue(row.getPrintSeconds() > 0, "print time not stored");
+    assertTrue(row.getFilamentCm3().doubleValue() > 0, "filament not stored");
+  }
+
+  private byte[] cubeStl() throws Exception {
+    return Files.readAllBytes(Path.of("src/test/resources/cube.stl"));
+  }
+
+  private static boolean slicerInstalled() {
+    try {
+      return new ProcessBuilder("sh", "-c", "command -v prusa-slicer").start().waitFor() == 0;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   // ---------- helpers ----------
