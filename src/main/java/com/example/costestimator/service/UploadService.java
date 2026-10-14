@@ -65,7 +65,7 @@ public class UploadService {
 
     Upload upload = new Upload();
     upload.setOriginalFilename(file.getOriginalFilename());
-    upload.setFilename(storedName);
+    upload.setStoredFilename(storedName);
     upload.setStatus(UploadStatus.PENDING);
     upload.setMaterial(material);
     upload.setOwnerId(ownerId);

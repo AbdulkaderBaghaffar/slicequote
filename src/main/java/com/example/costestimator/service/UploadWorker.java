@@ -36,7 +36,7 @@ public class UploadWorker {
       uploadRepository.save(u);
 
       // TODO: replace with slicerRunner.slice(path)
-      Path path = Path.of(storageRoot, u.getFilename());
+      Path path = Path.of(storageRoot, u.getStoredFilename());
 
       SliceResult result = slicerRunner.slice(path);
       u.setPrintSeconds(result.seconds());

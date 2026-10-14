@@ -123,11 +123,11 @@ public class Upload {
     this.ownerId = ownerId;
   }
 
-  public String getFilename() {
+  public String getStoredFilename() {
     return storedFilename;
   }
 
-  public void setFilename(String storedFilename) {
+  public void setStoredFilename(String storedFilename) {
     this.storedFilename = storedFilename;
   }
 }
