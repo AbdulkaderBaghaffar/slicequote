@@ -1,7 +1,5 @@
-package com.example.costestimator.service;
+package com.example.costestimator.pricing.config;
 
-import com.example.costestimator.data.PricingRate;
-import com.example.costestimator.repository.PricingRateRepository;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,5 +1,5 @@
 
-package com.example.costestimator.service;
+package com.example.costestimator.pricing.calc;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

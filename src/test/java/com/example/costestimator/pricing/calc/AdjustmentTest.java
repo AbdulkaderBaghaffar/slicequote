@@ -1,4 +1,4 @@
-package com.example.costestimator.service;
+package com.example.costestimator.pricing.calc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

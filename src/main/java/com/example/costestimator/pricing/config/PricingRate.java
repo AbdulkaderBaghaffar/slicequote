@@ -1,4 +1,4 @@
-package com.example.costestimator.data;
+package com.example.costestimator.pricing.config;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

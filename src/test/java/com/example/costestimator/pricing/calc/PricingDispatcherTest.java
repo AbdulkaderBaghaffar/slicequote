@@ -1,8 +1,8 @@
-package com.example.costestimator.service;
+package com.example.costestimator.pricing.calc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.costestimator.data.PricingMode;
+import com.example.costestimator.pricing.config.PricingMode;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
