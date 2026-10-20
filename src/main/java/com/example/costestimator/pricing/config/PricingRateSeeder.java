@@ -1,8 +1,5 @@
-package com.example.costestimator.service;
+package com.example.costestimator.pricing.config;
 
-import com.example.costestimator.data.PricingMode;
-import com.example.costestimator.data.PricingRate;
-import com.example.costestimator.repository.PricingRateRepository;
 import java.math.BigDecimal;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
