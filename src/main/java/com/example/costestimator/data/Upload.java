@@ -2,12 +2,16 @@ package com.example.costestimator.data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Convert;
+import com.example.costestimator.pricing.PriceBreakdownConverter;
+import com.example.costestimator.pricing.calc.PriceLine;
+import java.util.List;
 
 @Entity
 public class Upload {
@@ -31,6 +35,9 @@ public class Upload {
   private Instant createdAt;
   private Long ownerId;
   private String storedFilename;
+  @Convert(converter = PriceBreakdownConverter.class)
+  @Column(columnDefinition = "varchar(4000)")
+  private List<PriceLine> priceBreakdown;
 
   public Upload() {
   }
@@ -129,5 +136,13 @@ public class Upload {
 
   public void setStoredFilename(String storedFilename) {
     this.storedFilename = storedFilename;
+  }
+
+  public List<PriceLine> getPriceBreakdown() {
+    return priceBreakdown;
+  }
+
+  public void setPriceBreakdown(List<PriceLine> priceBreakdown) {
+    this.priceBreakdown = priceBreakdown;
   }
 }

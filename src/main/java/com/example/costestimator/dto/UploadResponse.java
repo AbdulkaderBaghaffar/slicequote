@@ -2,6 +2,7 @@ package com.example.costestimator.dto;
 
 import com.example.costestimator.data.UploadStatus;
 import java.math.BigDecimal;
+import com.example.costestimator.pricing.calc.PriceBreakdown;
 import java.time.Instant;
 
 public record UploadResponse(
@@ -11,6 +12,7 @@ public record UploadResponse(
     UploadStatus status,
     BigDecimal estimatedPrice,
     String errorMessage,
+    PriceBreakdown breakdown,
     Instant createdAt,
     Long printSeconds,
     BigDecimal filamentCm3) {

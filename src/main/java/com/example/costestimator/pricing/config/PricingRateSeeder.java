@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class PricingRateSeeder implements CommandLineRunner {
 
   private final PricingRateRepository repo;
+  private final PricingRateService pricingRateService;
 
-  public PricingRateSeeder(PricingRateRepository repo) {
+  public PricingRateSeeder(PricingRateRepository repo, PricingRateService pricingRateService) {
     this.repo = repo;
+    this.pricingRateService = pricingRateService;
   }
 
   @Override
@@ -25,5 +27,6 @@ public class PricingRateSeeder implements CommandLineRunner {
       rate.setMinFloor(new BigDecimal("7.50"));
       repo.save(rate);
     }
+    pricingRateService.logActive(); // ← unconditional
   }
 }
