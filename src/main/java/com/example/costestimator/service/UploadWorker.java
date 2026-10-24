@@ -11,6 +11,9 @@ import com.example.costestimator.data.Upload;
 import com.example.costestimator.data.UploadStatus;
 import com.example.costestimator.repository.UploadRepository;
 
+import com.example.costestimator.pricing.PricingService;
+import com.example.costestimator.pricing.calc.PriceBreakdown;
+
 @Service
 public class UploadWorker {
 
@@ -19,12 +22,14 @@ public class UploadWorker {
   private final UploadRepository uploadRepository;
   private final SlicerRunner slicerRunner;
   private final String storageRoot;
+  private final PricingService pricingService;
 
   public UploadWorker(UploadRepository uploadRepository, SlicerRunner slicerRunner,
-      @Value("${storage.root}") String storageRoot) {
+      @Value("${storage.root}") String storageRoot, PricingService pricingService) {
     this.uploadRepository = uploadRepository;
     this.slicerRunner = slicerRunner;
     this.storageRoot = storageRoot;
+    this.pricingService = pricingService;
 
   }
 
@@ -35,13 +40,16 @@ public class UploadWorker {
       u.setStatus(UploadStatus.PROCESSING);
       uploadRepository.save(u);
 
-      // TODO: replace with slicerRunner.slice(path)
       Path path = Path.of(storageRoot, u.getStoredFilename());
 
       SliceResult result = slicerRunner.slice(path);
       u.setPrintSeconds(result.seconds());
       u.setFilamentCm3(result.filamentCm3());
       u.setSlicerVersion(result.slicerVersion());
+
+      PriceBreakdown bd = pricingService.priceFor(u);
+      u.setEstimatedPrice(bd.total());
+      u.setPriceBreakdown(bd.lines());
 
       u.setStatus(UploadStatus.DONE);
       uploadRepository.save(u);

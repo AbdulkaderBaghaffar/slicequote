@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.example.costestimator.pricing.calc.PriceBreakdown;
 import com.example.costestimator.data.Material;
 import com.example.costestimator.data.Upload;
 import com.example.costestimator.data.UploadStatus;
@@ -90,6 +90,7 @@ public class UploadService {
         u.getStatus(),
         u.getEstimatedPrice(),
         u.getErrorMessage(),
+        u.getPriceBreakdown() == null ? null : new PriceBreakdown(u.getPriceBreakdown()),
         u.getCreatedAt(),
         u.getPrintSeconds(),
         u.getFilamentCm3());
