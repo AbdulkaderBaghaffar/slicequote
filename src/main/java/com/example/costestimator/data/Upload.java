@@ -35,6 +35,7 @@ public class Upload {
   @ManyToOne
   private Material material;
 
+  @Column(precision = 10, scale = 2)
   private BigDecimal estimatedPrice;
   private Instant createdAt;
   private Long ownerId;
