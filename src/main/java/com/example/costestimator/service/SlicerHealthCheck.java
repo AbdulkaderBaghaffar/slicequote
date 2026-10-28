@@ -1,5 +1,6 @@
 package com.example.costestimator.service;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,14 +29,22 @@ public class SlicerHealthCheck {
       Process p = new ProcessBuilder(List.of(slicerPath, "--help"))
           .redirectErrorStream(true)
           .start();
+
       boolean done = p.waitFor(Duration.ofSeconds(10).toSeconds(), TimeUnit.SECONDS);
+
       if (!done) {
         p.destroyForcibly();
-        throw new IllegalStateException("slicer did not respond: " + slicerPath);
+        log.error("slicer did not respond within 10s: {} — uploads will FAIL", slicerPath);
+        return;
       }
+
       log.info("slicer ok: {}", slicerPath);
-    } catch (Exception e) {
-      throw new IllegalStateException("slicer not runnable at '" + slicerPath + "'", e);
+
+    } catch (IOException e) {
+      log.error("slicer NOT available at '{}' — uploads will FAIL until it is installed", slicerPath);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.error("interrupted while checking slicer: {}", slicerPath);
     }
   }
 }
