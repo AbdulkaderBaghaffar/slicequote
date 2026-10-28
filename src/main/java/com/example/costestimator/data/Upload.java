@@ -12,6 +12,8 @@ import jakarta.persistence.Convert;
 import com.example.costestimator.pricing.PriceBreakdownConverter;
 import com.example.costestimator.pricing.calc.PriceLine;
 import java.util.List;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 public class Upload {
@@ -21,6 +23,8 @@ public class Upload {
   private Long id;
 
   private String originalFilename;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private UploadStatus status = UploadStatus.PENDING;
   private String errorMessage;
 
@@ -31,6 +35,7 @@ public class Upload {
   @ManyToOne
   private Material material;
 
+  @Column(precision = 10, scale = 2)
   private BigDecimal estimatedPrice;
   private Instant createdAt;
   private Long ownerId;

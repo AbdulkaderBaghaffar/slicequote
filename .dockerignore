@@ -1,0 +1,10 @@
+target/
+data/
+uploads/
+.env
+.git/
+.idea/
+.classpath
+.project
+.settings/
+*.md
