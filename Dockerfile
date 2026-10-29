@@ -2,17 +2,14 @@ FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /build
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
-RUN ./mvnw -B dependency:go-offline || true
 COPY src ./src
 RUN ./mvnw -B -DskipTests package
 
 FROM eclipse-temurin:21-jre
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends prusa-slicer=2.9.4+dfsg-4 \
- && rm -rf /var/lib/apt/lists/*
-
+RUN useradd -r -u 1001 appuser
 WORKDIR /app
 COPY --from=builder /build/target/*.jar /app/app.jar
+RUN mkdir -p /app/data/uploads && chown -R appuser:appuser /app
+USER appuser
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-XX:MaxRAMPercentage=75","-jar","/app/app.jar"]
