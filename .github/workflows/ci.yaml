@@ -19,3 +19,26 @@ jobs:
           java-version: '21'     
           cache: maven            
       - run: ./mvnw -B verify      
+
+  image:
+    needs: build
+    if: github.event_name == 'push'
+    permissions:
+      packages: write 
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - uses : docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+            
+          tags: |
+            ghcr.io/abdulkaderbaghaffar/slicequote:${{ github.sha }}
+            ghcr.io/abdulkaderbaghaffar/slicequote:latest
