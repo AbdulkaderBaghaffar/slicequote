@@ -9,15 +9,20 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
-      retries: 5    
-    ports: 
-     - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   app:
     build: .
+    user: "1000:1000"
     env_file: .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     depends_on:
       db:
         condition: service_healthy
@@ -25,6 +30,17 @@ services:
       - "8080:8080"
     volumes:
       - ./data/uploads:/app/uploads
+
+  slicequote-cloudlfared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+    depends_on: 
+      app:
+        condition: service_healthy
+
+
+    restart: always
+
 
 volumes:
   pgdata:
