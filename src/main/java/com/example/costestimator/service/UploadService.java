@@ -42,7 +42,7 @@ public class UploadService {
   }
 
   public List<UploadResponse> listUploads(Long ownerId) {
-    return uploadRepository.findByOwnerId(ownerId).stream()
+    return uploadRepository.findByOwnerIdOrderByIdDesc(ownerId).stream()
         .map(this::toResponse)
         .toList();
   }
@@ -86,7 +86,7 @@ public class UploadService {
     return new UploadResponse(
         u.getId(),
         u.getOriginalFilename(),
-        u.getMaterial().getId(),
+        u.getMaterial() == null ? null : u.getMaterial().getId(),
         u.getStatus(),
         u.getEstimatedPrice(),
         u.getErrorMessage(),

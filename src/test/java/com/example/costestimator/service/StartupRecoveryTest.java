@@ -26,7 +26,7 @@ class StartupRecoveryTest {
     u.setOriginalFilename("a.stl");
     u.setStoredFilename("a.stl");
     u.setStatus(UploadStatus.PROCESSING);
-    u.setOwnerId(1L);
+    u.setOwnerId(999L);
     u.setCreatedAt(Instant.now());
     Long id = repo.save(u).getId();
 

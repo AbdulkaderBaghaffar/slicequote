@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UploadRepository extends JpaRepository<Upload, Long> {
-  List<Upload> findByOwnerId(Long ownerId);
+  List<Upload> findByOwnerIdOrderByIdDesc(Long ownerId);
 
   Optional<Upload> findByIdAndOwnerId(Long id, Long ownerId);
 

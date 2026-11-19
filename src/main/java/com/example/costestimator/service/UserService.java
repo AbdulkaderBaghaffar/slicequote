@@ -1,9 +1,12 @@
 package com.example.costestimator.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import java.util.Locale;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.costestimator.data.User;
 import com.example.costestimator.dto.LoginRequest;
@@ -23,21 +26,49 @@ public class UserService {
     this.jwtService = jwtService;
   }
 
-  public User signup(SignupRequest request) {
+  public LoginResponse signup(SignupRequest request) {
+    String email = normalizeEmail(request.getEmail());
+
+    if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
+      throw new EmailAlreadyRegisteredException();
+    }
+
     User user = new User();
-    user.setEmail(request.getEmail());
+    user.setEmail(email);
     user.setPasswordhash(passwordEncoder.encode(request.getPassword()));
-    return userRepository.save((user));
+
+    try {
+      userRepository.save(user);
+    } catch (DataIntegrityViolationException e) {
+      // Unique-constraint race between the check above and the insert.
+      throw new EmailAlreadyRegisteredException();
+    }
+
+    return new LoginResponse(issueToken(user));
   }
 
   public LoginResponse login(LoginRequest request) {
-    User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
+    String email = normalizeEmail(request.getEmail());
 
-    if (passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-      return new LoginResponse(jwtService.generateToken(user.getEmail()));
+    User user = userRepository.findByEmailIgnoreCase(email)
+        .orElseThrow(() -> invalidCredentials());
+
+    if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+      throw invalidCredentials();
     }
-    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
 
+    return new LoginResponse(issueToken(user));
+  }
+
+  private String issueToken(User user) {
+    return jwtService.generateToken(user.getEmail());
+  }
+
+  private static String normalizeEmail(String email) {
+    return email.trim().toLowerCase(Locale.ROOT);
+  }
+
+  private static ResponseStatusException invalidCredentials() {
+    return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
   }
 }

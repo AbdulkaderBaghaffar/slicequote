@@ -2,7 +2,9 @@
 
 > Backend service for a 3D-print cost estimation site. Pick a material, upload an STL, get a priced estimate back.
 
+## API
 
+See [docs/api.md](docs/api.md) for the HTTP contract (endpoints, error shape, upload lifecycle).
 
 ---
 
