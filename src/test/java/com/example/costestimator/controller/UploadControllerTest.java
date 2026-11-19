@@ -15,6 +15,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -67,6 +69,7 @@ class UploadControllerTest {
   void oversizedFileReturns413() throws Exception {
     HttpResponse<String> res = postUpload(materialId, new byte[1500], "big.stl", token("a@test.com"));
     assertEquals(HttpStatus.PAYLOAD_TOO_LARGE.value(), res.statusCode());
+    assertTrue(res.body().contains("\"message\""), res.body());
   }
 
   @Test
@@ -74,18 +77,21 @@ class UploadControllerTest {
     byte[] junk = "hello world not a model".getBytes(StandardCharsets.US_ASCII);
     HttpResponse<String> res = postUpload(materialId, junk, "note.stl", token("a@test.com"));
     assertEquals(HttpStatus.BAD_REQUEST.value(), res.statusCode());
+    assertTrue(res.body().contains("not a valid STL"), res.body());
   }
 
   @Test
   void unknownMaterialReturns400() throws Exception {
     HttpResponse<String> res = postUpload(999999L, binaryStl(4), "part.stl", token("a@test.com"));
     assertEquals(HttpStatus.BAD_REQUEST.value(), res.statusCode());
+    assertTrue(res.body().contains("unknown material"), res.body());
   }
 
   @Test
   void missingFilePartReturns400() throws Exception {
     HttpResponse<String> res = postUpload(materialId, null, null, token("a@test.com"));
     assertEquals(HttpStatus.BAD_REQUEST.value(), res.statusCode());
+    assertTrue(res.body().contains("\"field\":\"file\""), res.body());
   }
 
   @Test
@@ -95,6 +101,7 @@ class UploadControllerTest {
 
     HttpResponse<String> res = send("GET", "/uploads/" + id, token("b@test.com"), null, null);
     assertEquals(HttpStatus.NOT_FOUND.value(), res.statusCode());
+    assertTrue(res.body().contains("\"status\":404"), res.body());
   }
 
   @Autowired
@@ -132,6 +139,24 @@ class UploadControllerTest {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  @Test
+  void listUploadsReturnsNewestFirst() throws Exception {
+    String token = token("a@test.com");
+    long first = jsonNumber(postUpload(materialId, binaryStl(4), "first.stl", token).body(), "id");
+    long second = jsonNumber(postUpload(materialId, binaryStl(4), "second.stl", token).body(), "id");
+
+    HttpResponse<String> res = send("GET", "/uploads", token, null, null);
+    assertEquals(HttpStatus.OK.value(), res.statusCode(), res.body());
+
+    Matcher m = Pattern.compile("\"id\"\\s*:\\s*(\\d+)").matcher(res.body());
+    List<Long> ids = new ArrayList<>();
+    while (m.find()) {
+      ids.add(Long.parseLong(m.group(1)));
+    }
+    assertTrue(ids.indexOf(second) < ids.indexOf(first),
+        "newest upload should come first, got " + ids);
   }
 
   // ---------- helpers ----------

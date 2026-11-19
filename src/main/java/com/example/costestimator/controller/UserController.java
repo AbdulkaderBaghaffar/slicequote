@@ -1,11 +1,14 @@
 package com.example.costestimator.controller;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.costestimator.service.*;
+
+import com.example.costestimator.service.UserService;
 import com.example.costestimator.dto.LoginRequest;
 import com.example.costestimator.dto.LoginResponse;
 import com.example.costestimator.dto.SignupRequest;
@@ -20,12 +23,12 @@ public class UserController {
 
   @PostMapping("/auth/signup")
   @ResponseStatus(HttpStatus.CREATED)
-  public void signup(@RequestBody SignupRequest request) {
-    userService.signup(request);
+  public LoginResponse signup(@Valid @RequestBody SignupRequest request) {
+    return userService.signup(request);
   }
 
-  @PostMapping("auth/login")
-  public LoginResponse login(@RequestBody LoginRequest request) {
+  @PostMapping("/auth/login")
+  public LoginResponse login(@Valid @RequestBody LoginRequest request) {
     return userService.login(request);
   }
 }
