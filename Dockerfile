@@ -9,18 +9,22 @@ RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -DskipTests package
 FROM eclipse-temurin:21-jre
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      curl ca-certificates libgl1 libglu1-mesa libgtk-3-0 \
-      libglib2.0-0 libfontconfig1 libx11-6 libxext6 libxrender1 libdbus-1-3 \
-      libwebkit2gtk-4.1-0 \
-    && rm -rf /var/lib/apt/lists/*
+  curl ca-certificates libgl1 libglu1-mesa libgtk-3-0 \
+  libglib2.0-0 libfontconfig1 libx11-6 libxext6 libxrender1 libdbus-1-3 \
+  libwebkit2gtk-4.1-0 \
+  && rm -rf /var/lib/apt/lists/*
 
 ARG PRUSA_VERSION=2.8.1
-RUN curl -fsSL -o /tmp/p.AppImage \
-      "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.8.1/PrusaSlicer-2.8.1%2Blinux-x64-newer-distros-GTK3-202409181416.AppImage" \
-    && chmod +x /tmp/p.AppImage \
-    && cd /opt && /tmp/p.AppImage --appimage-extract \
-    && mv squashfs-root prusaslicer \
-    && rm /tmp/p.AppImage
+RUN echo "arch=$(uname -m) version=${PRUSA_VERSION}" \
+  && URL="https://github.com/prusa3d/PrusaSlicer/releases/download/version_${PRUSA_VERSION}/PrusaSlicer-${PRUSA_VERSION}%2Blinux-x64-newer-distros-GTK3-202409181416.AppImage" \
+  && CODE=$(curl -sSL --retry 3 --retry-delay 2 -o /tmp/p.AppImage -w '%{http_code}' "$URL") \
+  && echo "http=${CODE} bytes=$(stat -c%s /tmp/p.AppImage)" \
+  && [ "$CODE" = "200" ] \
+  && chmod +x /tmp/p.AppImage \
+  && cd /opt && /tmp/p.AppImage --appimage-extract \
+  && test -x /opt/squashfs-root/AppRun \
+  && mv squashfs-root prusaslicer \
+  && rm /tmp/p.AppImage
 ENV SLICER_PATH=/opt/prusaslicer/AppRun
 
 RUN useradd -r -u 1001 appuser
