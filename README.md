@@ -6,12 +6,30 @@
 
 See [docs/api.md](docs/api.md) for the HTTP contract (endpoints, error shape, upload lifecycle).
 
+## Web client
+
+The React frontend lives in [`web/`](web/) (Vite + React + TypeScript) and
+implements the Acid/Forest quotation design. It talks to this API for signup /
+login, materials, STL upload, slicing status, and price breakdowns.
+
+```bash
+cd web
+npm install
+npm run dev      # http://localhost:5173 (CORS default)
+npm run build    # type-check + production bundle
+npm run preview  # http://localhost:4173
+```
+
+The API URL defaults to `http://localhost:8080`; override it with
+`VITE_API_URL` in `web/.env.local`. See [`web/README.md`](web/README.md).
+
 ---
 
 
 ## Stack
 
 - **Java 21 + Spring Boot** 
+- **React 19 + Vite + TypeScript** (`web/`)
 - **Postgres 16**
 - **JWT** 
 - **PrusaSlicer CLI**
