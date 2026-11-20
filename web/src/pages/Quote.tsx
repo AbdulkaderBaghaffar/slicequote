@@ -445,6 +445,13 @@ export function Quote() {
             <div className="opt-section">
               <div className="opt-label">
                 <span className="t">Material</span>
+                <span className="v">
+                  {materialsLoading
+                    ? 'loading…'
+                    : materialsError
+                      ? 'unavailable'
+                      : `${materials.length} options`}
+                </span>
               </div>
               <div className="mat-list" id="matList">
                 {materialsLoading && (

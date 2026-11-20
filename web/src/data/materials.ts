@@ -55,6 +55,42 @@ export const MATERIAL_PRESETS: Record<string, MaterialPreset> = {
     density: 1.1,
     colors: ['#6b7280', '#2a2a2a', '#e8e8e8'],
   },
+  'PLA-CF': {
+    name: 'PLA-CF',
+    tag: 'Carbon · matte',
+    density: 1.3,
+    colors: ['#1f2937', '#a3e635', '#e5e7eb', '#4b5563'],
+  },
+  'PA-CF': {
+    name: 'PA-CF',
+    tag: 'Carbon · engineering',
+    density: 1.15,
+    colors: ['#0b0f14', '#334155', '#94a3b8', '#e2e8f0'],
+  },
+  PVA: {
+    name: 'PVA',
+    tag: 'Soluble support',
+    density: 1.23,
+    colors: ['#f5f5f4', '#a8a29e', '#1c2308', '#d6d3d1'],
+  },
+  WOOD: {
+    name: 'Wood',
+    tag: 'Wood-filled · matte',
+    density: 1.15,
+    colors: ['#b45309', '#78350f', '#f4f7e6', '#d97706'],
+  },
+  HIPS: {
+    name: 'HIPS',
+    tag: 'Support · lightweight',
+    density: 1.04,
+    colors: ['#e8e8e8', '#1c2308', '#a3e635', '#6b7280'],
+  },
+  PEI: {
+    name: 'PEI',
+    tag: 'High-temp · aerospace',
+    density: 1.27,
+    colors: ['#7c3aed', '#1c2308', '#e8e8e8', '#c4b5fd'],
+  },
 }
 
 export const LANDING_MATERIAL_ORDER = [
@@ -66,6 +102,12 @@ export const LANDING_MATERIAL_ORDER = [
   'NYLON',
   'PC',
   'RESIN',
+  'PLA-CF',
+  'PA-CF',
+  'PVA',
+  'WOOD',
+  'HIPS',
+  'PEI',
 ] as const
 
 export function presetFor(name: string): MaterialPreset {
