@@ -93,6 +93,25 @@ class UploadWorkerTest {
   }
 
   @Test
+  void quantityMultipliesMachineTimeButChargesBaseFeeOnce() {
+    Upload u = uploadRepository.findById(uploadId).orElseThrow();
+    u.setQuantity(3);
+    uploadRepository.saveAndFlush(u);
+
+    when(slicerRunner.slice(any(Path.class)))
+        .thenReturn(new SliceResult(1800L, new BigDecimal("3.59"), "2.7.0"));
+
+    worker.process(uploadId);
+
+    Upload done = uploadRepository.findById(uploadId).orElseThrow();
+    assertThat(done.getEstimatedPrice()).isEqualByComparingTo("24.50");
+    assertThat(done.getPriceBreakdown()).extracting(PriceLine::label)
+        .containsExactly("Machine time", "Base fee");
+    assertThat(done.getPriceBreakdown().get(0).amount()).isEqualByComparingTo("22.50");
+    assertThat(done.getPriceBreakdown().get(1).amount()).isEqualByComparingTo("2.00");
+  }
+
+  @Test
   void breakdownTotalEqualsSumOfLinesAfterReload() {
     when(slicerRunner.slice(any(Path.class)))
         .thenReturn(new SliceResult(1800L, new BigDecimal("3.59"), "2.7.0"));

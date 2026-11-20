@@ -99,6 +99,7 @@ Requires a token. `multipart/form-data` with:
 |---|---|---|
 | `file` | file | STL, max 10MB |
 | `materialId` | number | from `GET /materials` |
+| `quantity` | number | optional, default `1`, range `1–24` |
 
 Do not set `Content-Type` manually; the browser must add the multipart boundary.
 
@@ -109,6 +110,7 @@ Do not set `Content-Type` manually; the browser must add the multipart boundary.
   "id": 42,
   "originalFilename": "cube.stl",
   "materialId": 1,
+  "quantity": 1,
   "status": "PENDING",
   "estimatedPrice": null,
   "errorMessage": null,
@@ -127,6 +129,18 @@ Requires a token. Returns the caller's uploads, newest first.
 
 Requires a token. Returns one upload owned by the caller, or `404`.
 
+### `POST /uploads/{id}/reprice`
+
+Requires a token. Recalculates a completed upload for a new quantity without
+re-slicing. Query parameter:
+
+| Param | Type | Notes |
+|---|---|---|
+| `quantity` | number | default `1`, range `1–24` |
+
+`200 OK` with the updated `UploadResponse`. Returns `409` if the upload is not
+`DONE`.
+
 ## Upload status
 
 `PENDING` → `PROCESSING` → `DONE` or `FAILED`.
@@ -141,13 +155,14 @@ When `DONE`:
   "id": 42,
   "originalFilename": "cube.stl",
   "materialId": 1,
+  "quantity": 3,
   "status": "DONE",
-  "estimatedPrice": 0.42,
+  "estimatedPrice": 1.16,
   "errorMessage": null,
   "breakdown": {
-    "total": 0.42,
+    "total": 1.16,
     "lines": [
-      { "label": "Machine time", "amount": 0.37 },
+      { "label": "Machine time", "amount": 1.11 },
       { "label": "Base fee", "amount": 0.05 }
     ]
   },
@@ -157,9 +172,11 @@ When `DONE`:
 }
 ```
 
-`breakdown.total` always equals the sum of `breakdown.lines[].amount` and
-equals `estimatedPrice`. Render `lines[]` generically; new labels such as
-`Minimum order` may appear without a frontend change.
+`estimatedPrice` and `breakdown.total` are for the requested `quantity`.
+`printSeconds` and `filamentCm3` remain per part. `breakdown.total` always
+equals the sum of `breakdown.lines[].amount` and equals `estimatedPrice`. Render
+`lines[]` generically; new labels such as `Minimum order` may appear without a
+frontend change.
 
 When `FAILED`, `errorMessage` is set and both `breakdown` and
 `estimatedPrice` are `null`.
@@ -174,4 +191,5 @@ Local defaults: `http://localhost:5173` (Vite dev) and
 ## Limits
 
 - STL upload: 10MB (request 12MB)
+- Quantity: 1–24
 - Status polling: keep it to roughly one request per 1–2 seconds

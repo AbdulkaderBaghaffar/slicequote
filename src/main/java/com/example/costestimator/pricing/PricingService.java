@@ -34,13 +34,25 @@ public class PricingService {
           "upload " + upload.getId() + " has no print time (printSeconds=" + secs + ")");
     }
 
+    int quantity = upload.getQuantity() == null ? 1 : upload.getQuantity();
+    if (quantity < 1) {
+      throw new IllegalStateException(
+          "upload " + upload.getId() + " has invalid quantity (" + quantity + ")");
+    }
+    BigDecimal quantityFactor = BigDecimal.valueOf(quantity);
+
     BigDecimal minutes = Money.divide(
         BigDecimal.valueOf(secs),
         BigDecimal.valueOf(60));
 
+    BigDecimal totalMinutes = minutes.multiply(quantityFactor);
+    BigDecimal totalFilament = upload.getFilamentCm3() == null
+        ? null
+        : upload.getFilamentCm3().multiply(quantityFactor);
+
     PricingInput input = new PricingInput(
-        minutes,
-        upload.getFilamentCm3(),
+        totalMinutes,
+        totalFilament,
         null, // costPerGram — unused by MACHINE_TIME
         rate.getHourlyRate(),
         rate.getBaseFee(),

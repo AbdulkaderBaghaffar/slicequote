@@ -46,7 +46,15 @@ public class UploadController {
   @PostMapping("/uploads")
   @ResponseStatus(HttpStatus.CREATED)
   public UploadResponse addUpload(@RequestParam("file") MultipartFile file, @RequestParam Long materialId,
+      @RequestParam(defaultValue = "1") int quantity,
       Authentication auth) {
-    return uploadService.addUpload(file, materialId, currentOwnerId(auth));
+    return uploadService.addUpload(file, materialId, quantity, currentOwnerId(auth));
+  }
+
+  @PostMapping("/uploads/{id}/reprice")
+  public UploadResponse repriceUpload(@PathVariable Long id,
+      @RequestParam(defaultValue = "1") int quantity,
+      Authentication auth) {
+    return uploadService.reprice(id, quantity, currentOwnerId(auth));
   }
 }

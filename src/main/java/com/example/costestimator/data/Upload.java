@@ -28,6 +28,9 @@ public class Upload {
   private UploadStatus status = UploadStatus.PENDING;
   private String errorMessage;
 
+  @Column(nullable = false)
+  private Integer quantity = 1;
+
   private Long printSeconds;
   private BigDecimal filamentCm3;
   private String slicerVersion;
@@ -77,6 +80,14 @@ public class Upload {
 
   public void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
+  }
+
+  public Integer getQuantity() {
+    return quantity;
+  }
+
+  public void setQuantity(Integer quantity) {
+    this.quantity = quantity;
   }
 
   public Long getPrintSeconds() {
