@@ -14,7 +14,7 @@ public class CorsConfig {
 
   private final List<String> allowedOrigins;
 
-  public CorsConfig(@Value("${cors.allowed-origins:http://localhost:5173}") List<String> allowedOrigins) {
+  public CorsConfig(@Value("${cors.allowed-origins:http://localhost:5173,http://localhost:4173}") List<String> allowedOrigins) {
     this.allowedOrigins = allowedOrigins.stream()
         .map(String::trim)
         .filter(origin -> !origin.isEmpty())

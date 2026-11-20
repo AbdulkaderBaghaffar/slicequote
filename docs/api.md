@@ -167,7 +167,8 @@ When `FAILED`, `errorMessage` is set and both `breakdown` and
 ## CORS
 
 Allowed origins come from `CORS_ALLOWED_ORIGINS` (comma-separated).
-Local default: `http://localhost:5173`. `Authorization`, `Content-Type` and
+Local defaults: `http://localhost:5173` (Vite dev) and
+`http://localhost:4173` (Vite preview). `Authorization`, `Content-Type` and
 `Accept` request headers are allowed.
 
 ## Limits
