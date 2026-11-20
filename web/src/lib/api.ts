@@ -24,6 +24,7 @@ export interface UploadJob {
   id: number
   originalFilename: string
   materialId: number
+  quantity: number
   status: UploadStatus
   estimatedPrice: number | null
   errorMessage: string | null
@@ -189,11 +190,19 @@ export const api = {
     return request<ApiMaterial[]>('/materials', { signal })
   },
 
-  createUpload(file: File, materialId: number) {
+  createUpload(file: File, materialId: number, quantity: number) {
     const body = new FormData()
     body.append('file', file)
     body.append('materialId', String(materialId))
+    body.append('quantity', String(quantity))
     return request<UploadJob>('/uploads', { method: 'POST', body })
+  },
+
+  reprice(id: number, quantity: number) {
+    return request<UploadJob>(
+      `/uploads/${id}/reprice?quantity=${encodeURIComponent(String(quantity))}`,
+      { method: 'POST' },
+    )
   },
 
   getUpload(id: number, signal?: AbortSignal) {

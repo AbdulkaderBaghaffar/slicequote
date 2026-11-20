@@ -59,6 +59,7 @@ export function Quote() {
   const [phase, setPhase] = useState<QuotePhase>('idle')
   const [job, setJob] = useState<UploadJob | null>(null)
   const [jobError, setJobError] = useState<string | null>(null)
+  const [repricing, setRepricing] = useState(false)
 
   const [resetViewKey, setResetViewKey] = useState(0)
   const [instances, setInstances] = useState(1)
@@ -68,6 +69,13 @@ export function Quote() {
   const placeholderRef = useRef<ParsedModel | null>(null)
   const runRef = useRef(0)
   const fileReadRef = useRef(0)
+  const instancesRef = useRef(1)
+  const repricingRef = useRef(false)
+  const pendingRepriceRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    instancesRef.current = instances
+  }, [instances])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -157,7 +165,7 @@ export function Quote() {
   }, [selectedName])
 
   const preset = presetFor(selectedName ?? 'PLA')
-  const busy = phase === 'uploading' || phase === 'processing'
+  const busy = phase === 'uploading' || phase === 'processing' || repricing
   const priceFile = file ?? sampleFile
   const canPrice = Boolean(priceFile) && materialId !== null && !busy && !parsing
   const pricingSample = file === null && sampleFile !== null
@@ -169,8 +177,9 @@ export function Quote() {
     '--p-hole': shade(color, 0.42),
   } as CSSProperties
 
-  const statusLabel =
-    phase === 'uploading'
+  const statusLabel = repricing
+    ? 'Pricing'
+    : phase === 'uploading'
       ? 'Uploading'
       : phase === 'processing'
         ? 'Slicing'
@@ -180,11 +189,19 @@ export function Quote() {
             ? 'Failed'
             : 'Not priced'
 
-  const statusTone =
-    phase === 'done' ? 'done' : phase === 'failed' ? 'failed' : busy ? 'working' : 'idle'
+  const statusTone = repricing
+    ? 'working'
+    : phase === 'done'
+      ? 'done'
+      : phase === 'failed'
+        ? 'failed'
+        : busy
+          ? 'working'
+          : 'idle'
 
-  const priceButtonLabel =
-    phase === 'uploading'
+  const priceButtonLabel = repricing
+    ? 'Pricing…'
+    : phase === 'uploading'
       ? 'Uploading…'
       : phase === 'processing'
         ? 'Slicing…'
@@ -198,6 +215,9 @@ export function Quote() {
 
   function clearJob() {
     runRef.current += 1
+    repricingRef.current = false
+    pendingRepriceRef.current = null
+    setRepricing(false)
     setJob(null)
     setJobError(null)
     setPhase('idle')
@@ -291,10 +311,11 @@ export function Quote() {
     setJobError(null)
 
     try {
-      let current = await api.createUpload(priceFile, materialId)
+      let current = await api.createUpload(priceFile, materialId, instances)
       if (runId !== runRef.current) return
 
       setJob(current)
+      setInstances(current.quantity)
 
       if (current.status === 'DONE') {
         setPhase('done')
@@ -341,6 +362,70 @@ export function Quote() {
     }
   }
 
+  async function reprice(quantity: number) {
+    if (!job || job.status !== 'DONE') return
+    if (repricingRef.current) {
+      pendingRepriceRef.current = quantity
+      return
+    }
+
+    repricingRef.current = true
+    setRepricing(true)
+    setJobError(null)
+
+    const runId = ++runRef.current
+
+    try {
+      const updated = await api.reprice(job.id, quantity)
+      if (runId !== runRef.current) return
+      setJob(updated)
+      if (pendingRepriceRef.current === null) {
+        setInstances(updated.quantity)
+      }
+      setPhase('done')
+    } catch (error) {
+      if (runId !== runRef.current) return
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      if (error instanceof ApiError && error.status === 401) return
+
+      if (pendingRepriceRef.current === null) {
+        instancesRef.current = job.quantity
+        setInstances(job.quantity)
+      }
+      setPhase('done')
+      showToast(
+        error instanceof ApiError
+          ? error.message
+          : 'Could not update the quantity. Please try again.',
+      )
+    } finally {
+      if (runId === runRef.current) {
+        repricingRef.current = false
+        setRepricing(false)
+
+        const pending = pendingRepriceRef.current
+        pendingRepriceRef.current = null
+        if (pending !== null && pending !== quantity) {
+          void reprice(pending)
+        }
+      }
+    }
+  }
+
+  function adjustInstances(delta: number) {
+    const next = Math.max(1, Math.min(MAX_INSTANCES, instancesRef.current + delta))
+    if (next === instancesRef.current) return
+
+    instancesRef.current = next
+    setInstances(next)
+
+    if (phase === 'done' && job?.status === 'DONE') {
+      void reprice(next)
+    } else if (phase === 'failed') {
+      clearJob()
+    }
+  }
+
   const previewModel = model ?? placeholderModel
   const isPlaceholder = model === null && placeholderModel !== null
 
@@ -352,8 +437,8 @@ export function Quote() {
     job?.filamentCm3 != null ? `${Number(job.filamentCm3).toFixed(2)} cm³` : '—'
   const printTimeLabel =
     job?.printSeconds != null ? fmtTime(Number(job.printSeconds) / 60) : '—'
-  const unitPrice = job?.estimatedPrice != null ? Number(job.estimatedPrice) : null
-  const totalLabel = unitPrice != null ? fmtMoney(unitPrice * instances) : '—'
+  const totalLabel =
+    job?.estimatedPrice != null ? fmtMoney(Number(job.estimatedPrice)) : '—'
   const breakdownLines = job?.breakdown?.lines ?? []
 
   return (
@@ -644,8 +729,8 @@ export function Quote() {
                   type="button"
                   id="instanceMinus"
                   aria-label="Decrease instances"
-                  disabled={instances <= 1}
-                  onClick={() => setInstances((value) => Math.max(1, value - 1))}
+                  disabled={busy || instances <= 1}
+                  onClick={() => adjustInstances(-1)}
                 >
                   −
                 </button>
@@ -654,14 +739,14 @@ export function Quote() {
                   type="button"
                   id="instancePlus"
                   aria-label="Increase instances"
-                  disabled={instances >= MAX_INSTANCES}
-                  onClick={() => setInstances((value) => Math.min(MAX_INSTANCES, value + 1))}
+                  disabled={busy || instances >= MAX_INSTANCES}
+                  onClick={() => adjustInstances(1)}
                 >
                   +
                 </button>
               </div>
               <p className="field-help">
-                The 3D preview and estimated total scale with this count (max {MAX_INSTANCES}).
+                The 3D preview and server price update with this count (max {MAX_INSTANCES}).
               </p>
             </div>
 
@@ -695,30 +780,27 @@ export function Quote() {
                 ))}
                 {instances > 1 && (
                   <p className="summary-note">
-                    Breakdown is per part; the total is multiplied by {instances}.
+                    Server total for {instances} parts; base fee and minimum order
+                    apply once.
                   </p>
                 )}
-                <div className="sum-row">
-                  <span className="k">Unit estimate</span>
-                  <span className="v" id="sumUnit">
-                    {unitPrice != null ? fmtMoney(unitPrice) : '—'}
-                  </span>
-                </div>
                 <div className="sum-row total">
                   <span className="k">Estimated total</span>
                   <span>
                     <span className="v" id="sumTotal">{totalLabel}</span>
-                    <span className="per" id="sumPer">
-                      {instances > 1 && unitPrice != null
-                        ? `${instances} × ${fmtMoney(unitPrice)} · not binding`
-                        : 'not binding'}
-                    </span>
+                    <span className="per" id="sumPer">not binding</span>
                   </span>
                 </div>
-                {busy && (
+                {(phase === 'uploading' || phase === 'processing') && (
                   <p className="summary-note summary-note-row">
                     <span className="spinner" />
                     {phase === 'uploading' ? 'Uploading model…' : 'Slicing on the server…'}
+                  </p>
+                )}
+                {repricing && (
+                  <p className="summary-note summary-note-row">
+                    <span className="spinner" />
+                    Updating quantity…
                   </p>
                 )}
                 {phase === 'failed' && jobError && (

@@ -69,11 +69,13 @@ With the backend running, the end-to-end flow is:
 2. Create an account → JWT stored under `localStorage["sq-token"]` → `/quote`.
 3. Materials load from `GET /materials`.
 4. Drop an STL → parsed in the browser → 3D preview + bounding box.
-5. **Get price** → `POST /uploads`, then poll `GET /uploads/{id}` until
-   `DONE`/`FAILED`.
+5. **Get price** → `POST /uploads` with `quantity`, then poll
+   `GET /uploads/{id}` until `DONE`/`FAILED`.
 6. The summary renders `filamentCm3`, `printSeconds`, `breakdown.lines`, and
-   `estimatedPrice` from the server.
-7. Sign out clears the token; an invalid/expired token returns you to `/login`.
+   `estimatedPrice` from the server — including the quantity total.
+7. Changing the instance count after a quote calls
+   `POST /uploads/{id}/reprice`; no re-upload is needed.
+8. Sign out clears the token; an invalid/expired token returns you to `/login`.
 
 ## Backend wiring
 
@@ -82,8 +84,9 @@ With the backend running, the end-to-end flow is:
 | Sign in | `POST /auth/login` |
 | Create account | `POST /auth/signup` |
 | Load materials | `GET /materials` (Bearer token) |
-| Get price | `POST /uploads` multipart `file` + `materialId` |
+| Get price | `POST /uploads` multipart `file` + `materialId` + `quantity` |
 | Poll status | `GET /uploads/{id}` every 1.5 s |
+| Change instances | `POST /uploads/{id}/reprice?quantity=N` |
 | Sign out / 401 | Clear token, redirect to `/login` |
 
 The API contract lives in [`../docs/api.md`](../docs/api.md).
@@ -102,12 +105,17 @@ The API contract lives in [`../docs/api.md`](../docs/api.md).
   through the real upload/slicing flow, so you can test a quote without
   uploading a file. Source and license details are in
   [`public/models/README.md`](public/models/README.md).
-- The quote is for one uploaded model. Quantity, infill, and dimensions are not
-  client inputs anymore: the server reads them from the STL and its slicer
-  profile.
+- The quote is for one uploaded model, with an instance count priced by the
+  backend. Dimensions and infill are not client inputs: the server reads them
+  from the STL and its slicer profile.
+- Instance changes after a quote are recalculated by
+  `POST /uploads/{id}/reprice`; the frontend only renders the server total and
+  breakdown.
 - The bounding box is computed client-side from the STL and assumes millimetres.
-- The landing page's four material cards are static marketing content. The live
-  material list on `/quote` comes from the server and may contain fewer items.
+- The landing page's material cards are static marketing content. The live
+  material list on `/quote` comes from the server.
+- The backend's active pricing mode is machine time only. Material rates are
+  stored and displayed but are not yet part of the total.
 - JWTs are stored in `localStorage` because the API returns Bearer tokens. Use
   an HttpOnly cookie/session if you need stronger XSS protection.
 - There is no order/checkout endpoint yet; the estimate is not a binding offer.
