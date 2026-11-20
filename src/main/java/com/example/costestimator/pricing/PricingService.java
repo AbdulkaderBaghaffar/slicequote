@@ -1,15 +1,19 @@
 package com.example.costestimator.pricing;
 
+import com.example.costestimator.data.Material;
 import com.example.costestimator.data.Upload;
 import com.example.costestimator.pricing.calc.Adjustment;
 import com.example.costestimator.pricing.calc.MachineTimeFormula;
 import com.example.costestimator.pricing.calc.Money;
 import com.example.costestimator.pricing.calc.PriceBreakdown;
+import com.example.costestimator.pricing.calc.PriceLine;
 import com.example.costestimator.pricing.calc.PricingDispatcher;
 import com.example.costestimator.pricing.calc.PricingInput;
 import com.example.costestimator.pricing.config.PricingRate;
 import com.example.costestimator.pricing.config.PricingRateService;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,15 +54,32 @@ public class PricingService {
         ? null
         : upload.getFilamentCm3().multiply(quantityFactor);
 
+    Material material = upload.getMaterial();
+
     PricingInput input = new PricingInput(
         totalMinutes,
         totalFilament,
-        null, // costPerGram — unused by MACHINE_TIME
+        material == null ? null : material.getCostPerGram(),
         rate.getHourlyRate(),
         rate.getBaseFee(),
         rate.getMinFloor());
 
-    var lines = dispatcher.price(rate.getMode(), input);
+    List<PriceLine> lines = new ArrayList<>(dispatcher.price(rate.getMode(), input));
+    addMaterialCost(lines, totalFilament, material);
+
     return new PriceBreakdown(adjustment.adjust(lines, rate.getBaseFee(), rate.getMinFloor()));
+  }
+
+  private static void addMaterialCost(
+      List<PriceLine> lines, BigDecimal totalFilament, Material material) {
+
+    if (totalFilament == null || material == null
+        || material.getDensity() == null || material.getCostPerGram() == null) {
+      return;
+    }
+
+    BigDecimal massGrams = totalFilament.multiply(material.getDensity());
+    BigDecimal cost = Money.round(massGrams.multiply(material.getCostPerGram()));
+    lines.add(new PriceLine("Material cost", cost));
   }
 }

@@ -85,9 +85,12 @@ Requires a token.
 
 ```json
 [
-  { "id": 1, "name": "PLA", "costPerGram": 0.025 }
+  { "id": 1, "name": "PLA", "costPerGram": 0.03, "density": 1.24 }
 ]
 ```
+
+`density` is in g/cm³ and is used together with `costPerGram` for material
+pricing.
 
 ## Uploads
 
@@ -157,12 +160,13 @@ When `DONE`:
   "materialId": 1,
   "quantity": 3,
   "status": "DONE",
-  "estimatedPrice": 1.16,
+  "estimatedPrice": 1.28,
   "errorMessage": null,
   "breakdown": {
-    "total": 1.16,
+    "total": 1.28,
     "lines": [
       { "label": "Machine time", "amount": 1.11 },
+      { "label": "Material cost", "amount": 0.12 },
       { "label": "Base fee", "amount": 0.05 }
     ]
   },
@@ -177,6 +181,14 @@ When `DONE`:
 equals the sum of `breakdown.lines[].amount` and equals `estimatedPrice`. Render
 `lines[]` generically; new labels such as `Minimum order` may appear without a
 frontend change.
+
+Material cost is calculated as:
+
+```text
+materialCost = filamentCm3 × quantity × density × costPerGram
+```
+
+where `density` is the material row's g/cm³ value.
 
 When `FAILED`, `errorMessage` is set and both `breakdown` and
 `estimatedPrice` are `null`.
