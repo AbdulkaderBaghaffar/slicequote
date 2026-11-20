@@ -2,6 +2,7 @@ export interface ApiMaterial {
   id: number
   name: string
   costPerGram: number
+  density: number
 }
 
 export interface AuthResponse {

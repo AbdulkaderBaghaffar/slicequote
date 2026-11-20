@@ -114,8 +114,9 @@ The API contract lives in [`../docs/api.md`](../docs/api.md).
 - The bounding box is computed client-side from the STL and assumes millimetres.
 - The landing page's material cards are static marketing content. The live
   material list on `/quote` comes from the server.
-- The backend's active pricing mode is machine time only. Material rates are
-  stored and displayed but are not yet part of the total.
+- The backend pricing includes machine time, material cost
+  (`filamentCm3 × density × costPerGram`), base fee, and the minimum-order
+  adjustment. Material density and rates come from `GET /materials`.
 - JWTs are stored in `localStorage` because the API returns Bearer tokens. Use
   an HttpOnly cookie/session if you need stronger XSS protection.
 - There is no order/checkout endpoint yet; the estimate is not a binding offer.
