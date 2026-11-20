@@ -5,15 +5,12 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type DragEvent,
 } from 'react'
 import { AppBar } from '../components/AppBar'
-import { PartSvg } from '../components/PartSvg'
 import { CloseIcon, FileIcon, ResetViewIcon, UploadIcon } from '../components/Icons'
 import { useToast } from '../components/Toast'
 import { presetFor, sortMaterials } from '../data/materials'
-import { shade } from '../lib/color'
 import { fmtMoney, fmtTime } from '../lib/format'
 import { ApiError, api, type ApiMaterial, type UploadJob } from '../lib/api'
 import { parseStl, type ParsedModel } from '../lib/stl'
@@ -52,6 +49,7 @@ export function Quote() {
   const [sampleFile, setSampleFile] = useState<File | null>(null)
   const [model, setModel] = useState<ParsedModel | null>(null)
   const [placeholderModel, setPlaceholderModel] = useState<ParsedModel | null>(null)
+  const [sampleLoading, setSampleLoading] = useState(true)
   const [modelError, setModelError] = useState<string | null>(null)
   const [parsing, setParsing] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -112,6 +110,7 @@ export function Quote() {
 
   useEffect(() => {
     let cancelled = false
+    setSampleLoading(true)
 
     fetch('/models/benchy.stl')
       .then((response) => {
@@ -132,9 +131,10 @@ export function Quote() {
         placeholderRef.current = parsed
         setPlaceholderModel(parsed)
         setSampleFile(sample)
+        setSampleLoading(false)
       })
       .catch(() => {
-        // Keep the isometric SVG as the fallback when the sample can't load.
+        if (!cancelled) setSampleLoading(false)
       })
 
     return () => {
@@ -169,13 +169,6 @@ export function Quote() {
   const priceFile = file ?? sampleFile
   const canPrice = Boolean(priceFile) && materialId !== null && !busy && !parsing
   const pricingSample = file === null && sampleFile !== null
-
-  const partStyle = {
-    '--p-top': shade(color, 1.24),
-    '--p-side-r': shade(color, 1.0),
-    '--p-side-l': shade(color, 0.72),
-    '--p-hole': shade(color, 0.42),
-  } as CSSProperties
 
   const statusLabel = repricing
     ? 'Pricing'
@@ -454,7 +447,7 @@ export function Quote() {
         </div>
 
         <div className="quote-grid">
-          <div className="vp" style={partStyle}>
+          <div className="vp">
             <div className="vp-top">
               <span className="vp-title">LIVE 3D PREVIEW</span>
               <div className="vp-actions">
@@ -499,14 +492,18 @@ export function Quote() {
                   </Suspense>
                 </>
               ) : (
-                <div className="vp-persp">
-                  <div
-                    className="part-rotor"
-                    id="vpPart"
-                    style={{ transform: 'rotateY(-20deg) rotateX(18deg)' }}
-                  >
-                    <PartSvg />
-                  </div>
+                <div className="vp-empty" role="status">
+                  {sampleLoading ? (
+                    <>
+                      <span className="spinner" />
+                      <span>Loading 3D preview…</span>
+                    </>
+                  ) : (
+                    <>
+                      <strong>3D preview unavailable</strong>
+                      <span>Upload an STL to preview your model.</span>
+                    </>
+                  )}
                 </div>
               )}
               {parsing && (
