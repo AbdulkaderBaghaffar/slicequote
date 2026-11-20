@@ -81,11 +81,11 @@ Public. `200 OK` with `{"status":"UP"}`.
 
 ### `GET /materials`
 
-Requires a token.
+Requires a token. Returns the **active** materials available for selection.
 
 ```json
 [
-  { "id": 1, "name": "PLA", "costPerGram": 0.03, "density": 1.24 }
+  { "id": 1, "name": "PLA", "costPerGram": 0.03, "density": 1.24, "active": true }
 ]
 ```
 
