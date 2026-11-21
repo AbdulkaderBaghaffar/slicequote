@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { ThemeToggle } from '../components/ThemeToggle'
-import { PartSvg } from '../components/PartSvg'
 import { ArrowRightIcon } from '../components/Icons'
 import { LANDING_MATERIAL_ORDER, MATERIAL_PRESETS } from '../data/materials'
 import { useAuth } from '../theme/AuthProvider'
@@ -59,14 +58,18 @@ export function Landing() {
 
           <div className="hero-visual" aria-hidden="true">
             <div className="part-stage-hero">
-              <div id="heroPart">
-                <PartSvg />
-              </div>
+              <img
+                className="hero-benchy"
+                src="/models/benchy-hero.webp"
+                width="915"
+                height="868"
+                alt=""
+              />
               <span className="spec-tag t1">
                 <b>PLA</b> · lime
               </span>
               <span className="spec-tag t2">
-                <b>40 × 40 × 30</b> mm
+                <b>60 × 31 × 48</b> mm
               </span>
             </div>
           </div>
@@ -76,8 +79,8 @@ export function Landing() {
       <div className="trust-strip">
         <div className="container trust-grid">
           <div className="trust-item">
-            <span className="num">40+</span>
-            <span className="lbl">Materials &amp; finishes</span>
+            <span className="num">4</span>
+            <span className="lbl">Materials available</span>
           </div>
           <div className="trust-item">
             <span className="num">48h</span>
@@ -104,7 +107,7 @@ export function Landing() {
           <div className="step">
             <span className="step-num">02</span>
             <h3>Choose a material</h3>
-            <p>Pick from PLA, ABS, PETG, or resin and a finish color that matches your use case.</p>
+            <p>Pick from PLA, PETG, TPU, or ABS and a finish color that matches your use case.</p>
           </div>
           <div className="step">
             <span className="step-num">03</span>
