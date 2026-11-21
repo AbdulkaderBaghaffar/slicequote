@@ -43,6 +43,8 @@ public class Upload {
   private Instant createdAt;
   private Long ownerId;
   private String storedFilename;
+  @Column(length = 64)
+  private String guestKey;
   @Convert(converter = PriceBreakdownConverter.class)
   @Column(columnDefinition = "varchar(4000)")
   private List<PriceLine> priceBreakdown;
@@ -152,6 +154,14 @@ public class Upload {
 
   public void setStoredFilename(String storedFilename) {
     this.storedFilename = storedFilename;
+  }
+
+  public String getGuestKey() {
+    return guestKey;
+  }
+
+  public void setGuestKey(String guestKey) {
+    this.guestKey = guestKey;
   }
 
   public List<PriceLine> getPriceBreakdown() {

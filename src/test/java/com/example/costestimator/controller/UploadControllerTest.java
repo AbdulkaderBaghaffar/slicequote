@@ -67,6 +67,29 @@ class UploadControllerTest {
   }
 
   @Test
+  void guestUploadCanBeReadWithSameKeyButHistoryRequiresAccount() throws Exception {
+    String guestKey = "guest-" + System.nanoTime();
+    HttpResponse<String> created = send("POST", "/uploads", null, guestKey,
+        multipart(materialId, binaryStl(4), "guest.stl"),
+        "multipart/form-data; boundary=" + BOUNDARY);
+    assertEquals(HttpStatus.CREATED.value(), created.statusCode(), created.body());
+    long id = jsonNumber(created.body(), "id");
+
+    assertEquals(HttpStatus.OK.value(),
+        send("GET", "/uploads/" + id, null, guestKey, null, null).statusCode());
+    assertEquals(HttpStatus.NOT_FOUND.value(),
+        send("GET", "/uploads/" + id, null, "other-" + guestKey, null, null).statusCode());
+    assertEquals(HttpStatus.UNAUTHORIZED.value(),
+        send("GET", "/uploads", null, guestKey, null, null).statusCode());
+  }
+
+  @Test
+  void materialsArePublic() throws Exception {
+    assertEquals(HttpStatus.OK.value(),
+        send("GET", "/materials", null, null, null).statusCode());
+  }
+
+  @Test
   void oversizedFileReturns413() throws Exception {
     HttpResponse<String> res = postUpload(materialId, new byte[1500], "big.stl", token("a@test.com"));
     assertEquals(HttpStatus.PAYLOAD_TOO_LARGE.value(), res.statusCode());
@@ -183,9 +206,17 @@ class UploadControllerTest {
 
   private HttpResponse<String> send(String method, String path, String token, byte[] body,
       String contentType) throws Exception {
+    return send(method, path, token, null, body, contentType);
+  }
+
+  private HttpResponse<String> send(String method, String path, String token, String guestKey,
+      byte[] body, String contentType) throws Exception {
     HttpRequest.Builder b = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path));
     if (token != null) {
       b.header("Authorization", "Bearer " + token);
+    }
+    if (guestKey != null) {
+      b.header("X-Guest-Id", guestKey);
     }
     if (body != null) {
       b.header("Content-Type", contentType);

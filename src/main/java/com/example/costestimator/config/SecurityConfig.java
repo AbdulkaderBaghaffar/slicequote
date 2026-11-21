@@ -46,6 +46,10 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/auth/**", "/error", "/actuator/health").permitAll()
+            .requestMatchers(HttpMethod.GET, "/materials").permitAll()
+            .requestMatchers(HttpMethod.POST, "/uploads").permitAll()
+            .requestMatchers(HttpMethod.GET, "/uploads/*").permitAll()
+            .requestMatchers(HttpMethod.POST, "/uploads/*/reprice").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

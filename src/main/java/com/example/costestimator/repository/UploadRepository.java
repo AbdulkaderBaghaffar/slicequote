@@ -11,5 +11,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
 
   Optional<Upload> findByIdAndOwnerId(Long id, Long ownerId);
 
+  Optional<Upload> findByIdAndGuestKey(Long id, String guestKey);
+
   List<Upload> findByStatus(UploadStatus status);
 }

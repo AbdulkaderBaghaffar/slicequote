@@ -90,7 +90,7 @@ class AuthControllerTest {
 
   @Test
   void missingTokenReturns401() throws Exception {
-    HttpResponse<String> res = send("GET", "/materials", null, null, null);
+    HttpResponse<String> res = send("GET", "/uploads", null, null, null);
 
     assertEquals(401, res.statusCode());
     assertEquals("Authentication required", jsonString(res.body(), "message"));
@@ -99,7 +99,7 @@ class AuthControllerTest {
 
   @Test
   void invalidTokenReturns401() throws Exception {
-    HttpResponse<String> res = send("GET", "/materials", "not-a-jwt", null, null);
+    HttpResponse<String> res = send("GET", "/uploads", "not-a-jwt", null, null);
 
     assertEquals(401, res.statusCode());
     assertTrue(res.body().contains("\"status\":401"));

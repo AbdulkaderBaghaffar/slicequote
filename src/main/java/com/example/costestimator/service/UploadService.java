@@ -53,7 +53,8 @@ public class UploadService {
         .toList();
   }
 
-  public UploadResponse addUpload(MultipartFile file, Long materialId, int quantity, Long ownerId) {
+  public UploadResponse addUpload(MultipartFile file, Long materialId, int quantity,
+      Long ownerId, String guestKey) {
     int validQuantity = validateQuantity(quantity);
     if (!stlValidator.validate(file)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "not a valid STL");
@@ -77,6 +78,7 @@ public class UploadService {
     upload.setQuantity(validQuantity);
     upload.setMaterial(material);
     upload.setOwnerId(ownerId);
+    upload.setGuestKey(ownerId == null ? guestKey : null);
     upload.setCreatedAt(Instant.now());
 
     Upload saved = uploadRepository.save(upload);
@@ -84,10 +86,9 @@ public class UploadService {
     return toResponse(saved);
   }
 
-  public UploadResponse reprice(Long id, int quantity, Long ownerId) {
+  public UploadResponse reprice(Long id, int quantity, Long ownerId, String guestKey) {
     int validQuantity = validateQuantity(quantity);
-    Upload upload = uploadRepository.findByIdAndOwnerId(id, ownerId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    Upload upload = findAuthorized(id, ownerId, guestKey);
 
     if (upload.getStatus() != UploadStatus.DONE || upload.getPrintSeconds() == null) {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -102,6 +103,19 @@ public class UploadService {
     return toResponse(uploadRepository.save(upload));
   }
 
+  private Upload findAuthorized(Long id, Long ownerId, String guestKey) {
+    if (ownerId != null) {
+      return uploadRepository.findByIdAndOwnerId(id, ownerId)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+    if (guestKey != null && !guestKey.isBlank()) {
+      return uploadRepository.findByIdAndGuestKey(id, guestKey)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+        "Authentication or guest id required");
+  }
+
   private static int validateQuantity(int quantity) {
     if (quantity < 1 || quantity > MAX_QUANTITY) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -110,10 +124,8 @@ public class UploadService {
     return quantity;
   }
 
-  public UploadResponse getUpload(Long id, Long ownerId) {
-    return uploadRepository.findByIdAndOwnerId(id, ownerId)
-        .map(this::toResponse)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+  public UploadResponse getUpload(Long id, Long ownerId, String guestKey) {
+    return toResponse(findAuthorized(id, ownerId, guestKey));
   }
 
   private UploadResponse toResponse(Upload u) {
