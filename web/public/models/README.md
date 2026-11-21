@@ -14,4 +14,8 @@ The original 10.8 MB STL (225,706 triangles) was simplified to
 quote-page placeholder. It is used only as a sample preview; uploaded models
 replace it.
 
-The credit link in the quote viewport points to 3dbenchy.com.
+## Usage in the app
+
+`benchy.stl` is the priceable sample model in the quote viewport.
+`benchy-hero.webp` is a transparent 915×868 render of the same CC0 model,
+used on the landing page so the hero does not load a second WebGL scene.
