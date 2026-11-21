@@ -99,9 +99,10 @@ With the backend running, the end-to-end flow is:
    `estimatedPrice` from the server — including the quantity total.
 7. Changing the instance count after a quote calls
    `POST /uploads/{id}/reprice`; no re-upload is needed.
-8. **History** (`/history`) lists the account's previous uploads with material,
-   quantity, status, price, and an expandable breakdown. In-progress rows
-   refresh automatically.
+8. **History** is a tab on `/quote`. It lists the account's previous uploads
+   with material, quantity, status, price, and an expandable breakdown.
+   In-progress rows refresh automatically. `/history` redirects to
+   `/quote?tab=history`.
 9. Sign out clears the token; an invalid/expired token returns you to `/login`.
 
 ## Backend wiring

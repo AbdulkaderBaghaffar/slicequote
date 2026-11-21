@@ -3,7 +3,6 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
 import { Quote } from './pages/Quote'
-import { History } from './pages/History'
 import { useAuth } from './theme/AuthProvider'
 
 function ScrollManager() {
@@ -28,7 +27,13 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   const location = useLocation()
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location.pathname + location.search }}
+      />
+    )
   }
   return children
 }
@@ -48,14 +53,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <History />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/history" element={<Navigate to="/quote?tab=history" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

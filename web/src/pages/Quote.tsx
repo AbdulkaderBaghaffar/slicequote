@@ -7,8 +7,9 @@ import {
   useState,
   type DragEvent,
 } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
+import { HistoryPanel } from '../components/HistoryPanel'
 import { CloseIcon, FileIcon, ResetViewIcon, UploadIcon } from '../components/Icons'
 import { useToast } from '../components/Toast'
 import { presetFor, sortMaterials } from '../data/materials'
@@ -38,7 +39,8 @@ function formatBytes(bytes: number): string {
 
 export function Quote() {
   const showToast = useToast()
-  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = searchParams.get('tab') === 'history' ? 'history' : 'quote'
 
   const [materials, setMaterials] = useState<ApiMaterial[]>([])
   const [materialsLoading, setMaterialsLoading] = useState(true)
@@ -63,6 +65,11 @@ export function Quote() {
 
   const [resetViewKey, setResetViewKey] = useState(0)
   const [instances, setInstances] = useState(1)
+
+  function showTab(tab: 'quote' | 'history') {
+    setSearchParams(tab === 'history' ? { tab: 'history' } : {}, { replace: true })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const inputRef = useRef<HTMLInputElement>(null)
   const modelRef = useRef<ParsedModel | null>(null)
@@ -443,19 +450,37 @@ export function Quote() {
       <main className="container quote-wrap">
         <div className="quote-head">
           <div>
-            <h1 id="quote-title">Build your quote</h1>
-            <p className="sub">Upload an STL, pick a material, and get a server-side price.</p>
+            <h1 id="quote-title">
+              {activeTab === 'quote' ? 'Build your quote' : 'Your quotes'}
+            </h1>
+            <p className="sub">
+              {activeTab === 'quote'
+                ? 'Upload an STL, pick a material, and get a server-side price.'
+                : "Every model you've priced, newest first."}
+            </p>
           </div>
-          <button
-            className="btn btn-ghost"
-            type="button"
-            onClick={() => navigate('/history')}
-          >
-            History
-          </button>
+          <div className="quote-tabs" role="group" aria-label="Quote view">
+            <button
+              type="button"
+              aria-pressed={activeTab === 'quote'}
+              onClick={() => showTab('quote')}
+            >
+              Quote
+            </button>
+            <button
+              type="button"
+              aria-pressed={activeTab === 'history'}
+              onClick={() => showTab('history')}
+            >
+              History
+            </button>
+          </div>
         </div>
 
-        <div className="quote-grid">
+        {activeTab === 'history' ? (
+          <HistoryPanel onBackToQuote={() => showTab('quote')} />
+        ) : (
+          <div className="quote-grid">
           <div className="vp">
             <div className="vp-top">
               <span className="vp-title">LIVE 3D PREVIEW</span>
@@ -829,7 +854,8 @@ export function Quote() {
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        )}
       </main>
     </section>
   )
