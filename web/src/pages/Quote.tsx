@@ -704,13 +704,11 @@ export function Quote() {
                     </span>
                   </div>
                 </div>
-                <p className="field-help">
-                  {model
-                    ? 'Read from your STL. Units are assumed to be millimetres.'
-                    : previewModel
-                      ? 'Sample 3DBenchy dimensions. Upload an STL to use your own model.'
-                      : 'Upload an STL to read its dimensions.'}
-                </p>
+                {model && (
+                  <p className="field-help">
+                    Read from your STL. Units are assumed to be millimetres.
+                  </p>
+                )}
               </div>
             </div>
 
