@@ -67,11 +67,11 @@ html[data-theme="dark"] .theme-toggle .ic-moon { display: none; }
 .hero-note { margin-top: var(--space-4); font-family: var(--font-mono); font-size: 13px; color: var(--on-dark-muted); }
 
 .hero-visual { position: relative; display: grid; place-items: center; }
-.part-stage-hero { width: min(100%, 460px); }
+.part-stage-hero { position: relative; width: min(100%, 460px); padding-bottom: 34px; }
 .hero-benchy { width: 100%; height: auto; display: block; filter: drop-shadow(0 30px 40px var(--part-shadow)); }
 .spec-tag { position: absolute; font-family: var(--font-mono); font-size: 12px; letter-spacing: .02em; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 7px; padding: 6px 9px; white-space: nowrap; }
-.spec-tag.t1 { top: 6%; right: 2%; }
-.spec-tag.t2 { bottom: 12%; left: -2%; }
+.spec-tag.t1 { top: 0; right: 0; }
+.spec-tag.t2 { bottom: 0; left: 0; }
 .spec-tag b { color: var(--accent-strong); font-weight: 600; }
 
 .trust-strip { background: var(--surface); border-bottom: 1px solid var(--line); }
