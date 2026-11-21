@@ -56,6 +56,30 @@ npm run preview
 For a real static host, configure an SPA fallback so `/login` and `/quote`
 resolve to `index.html`.
 
+## Production container
+
+```bash
+docker compose build web
+docker compose up -d web
+```
+
+Open <http://localhost:3000> (loopback only). The nginx image is built with:
+
+```text
+VITE_API_URL=/api
+```
+
+so the browser calls `/api/auth/login`, `/api/materials`, etc. on the same
+origin. nginx proxies `/api/*` to `http://app:8080/*` over the Compose network,
+so production does not depend on browser CORS.
+
+If you build the image manually:
+
+```bash
+docker build --build-arg VITE_API_URL=/api -t slicequote-web web
+```
+
+
 ## Verify
 
 ```bash

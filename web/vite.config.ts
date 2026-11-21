@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// The Spring Boot API allows http://localhost:5173 by default (CORS_ALLOWED_ORIGINS).
+// Dev calls the Spring API directly at http://localhost:8080.
+// The production nginx image builds with VITE_API_URL=/api and proxies it
+// to the backend on the internal Docker network.
 export default defineConfig({
   plugins: [react()],
   server: {
