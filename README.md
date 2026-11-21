@@ -20,8 +20,20 @@ npm run build    # type-check + production bundle
 npm run preview  # http://localhost:4173
 ```
 
-The API URL defaults to `http://localhost:8080`; override it with
-`VITE_API_URL` in `web/.env.local`. See [`web/README.md`](web/README.md).
+The API URL defaults to `http://localhost:8080` for development; override it with
+`VITE_API_URL` in `web/.env.local`. The production image builds with
+`VITE_API_URL=/api` and nginx proxies it to the backend.
+
+### Production
+
+```bash
+docker compose build
+docker compose up -d db app web
+```
+
+Open <http://localhost:3000>. The Cloudflare tunnel must target `http://web:80`.
+See [docs/deployment.md](docs/deployment.md) for the full deployment, security,
+backup, and troubleshooting guide.
 
 ---
 
