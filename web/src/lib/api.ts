@@ -44,7 +44,35 @@ interface ApiErrorBody {
 }
 
 const TOKEN_KEY = 'sq-token'
+const GUEST_KEY = 'sq-guest-id'
 const DEFAULT_API_URL = 'http://localhost:8080'
+
+let memoryGuestKey: string | null = null
+
+function createGuestKey(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `guest-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function getGuestKey(): string {
+  if (memoryGuestKey) return memoryGuestKey
+  try {
+    const stored = localStorage.getItem(GUEST_KEY)
+    if (stored) {
+      memoryGuestKey = stored
+      return stored
+    }
+    const key = createGuestKey()
+    localStorage.setItem(GUEST_KEY, key)
+    memoryGuestKey = key
+    return key
+  } catch {
+    memoryGuestKey = createGuestKey()
+    return memoryGuestKey
+  }
+}
 
 const configuredUrl = import.meta.env.VITE_API_URL
 export const API_URL = (configuredUrl === undefined ? DEFAULT_API_URL : configuredUrl).replace(/\/$/, '')
@@ -133,8 +161,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   const token = getStoredToken()
-  if (options.auth !== false && token) {
-    headers.Authorization = `Bearer ${token}`
+  if (options.auth !== false) {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    } else {
+      headers['X-Guest-Id'] = getGuestKey()
+    }
   }
 
   let response: Response

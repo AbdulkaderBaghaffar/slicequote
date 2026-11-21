@@ -89,9 +89,11 @@ npm run build
 
 With the backend running, the end-to-end flow is:
 
-1. Open `/quote` while signed out → redirected to `/login`.
-2. Create an account → JWT stored under `localStorage["sq-token"]` → `/quote`.
-3. Materials load from `GET /materials`.
+1. Open `/quote` directly — no account required. Guests can price the sample
+   and upload their own STL.
+2. Signed-in users can create an account from the quote app bar. Accounts keep
+   quote history.
+3. Materials load from `GET /materials` (public).
 4. Drop an STL → parsed in the browser → 3D preview + bounding box.
 5. **Get price** → `POST /uploads` with `quantity`, then poll
    `GET /uploads/{id}` until `DONE`/`FAILED`.
@@ -99,11 +101,22 @@ With the backend running, the end-to-end flow is:
    `estimatedPrice` from the server — including the quantity total.
 7. Changing the instance count after a quote calls
    `POST /uploads/{id}/reprice`; no re-upload is needed.
-8. **History** is a tab on `/quote`. It lists the account's previous uploads
-   with material, quantity, status, price, and an expandable breakdown.
-   In-progress rows refresh automatically. `/history` redirects to
-   `/quote?tab=history`.
+8. **History** is a tab on `/quote` and is only shown to signed-in users. It
+   lists previous uploads with material, quantity, status, price, and an
+   expandable breakdown. In-progress rows refresh automatically. `/history`
+   redirects to `/quote?tab=history` for accounts and `/quote` for guests.
 9. Sign out clears the token; an invalid/expired token returns you to `/login`.
+
+## Guest mode
+
+- `/quote` is public.
+- The browser stores a random guest id under `localStorage["sq-guest-id"]` and
+  sends it as `X-Guest-Id`.
+- Guest uploads are private to that id; they are not attached to an account and
+  do not appear in account history.
+- The History tab is hidden for guests.
+- The quote app bar shows **Sign in** instead of **Sign out**.
+- Guests can still price the Benchy sample and upload their own STL.
 
 ## Backend wiring
 
@@ -111,11 +124,11 @@ With the backend running, the end-to-end flow is:
 |---|---|
 | Sign in | `POST /auth/login` |
 | Create account | `POST /auth/signup` |
-| Load materials | `GET /materials` (Bearer token) |
-| Get price | `POST /uploads` multipart `file` + `materialId` + `quantity` |
-| Poll status | `GET /uploads/{id}` every 1.5 s |
-| Change instances | `POST /uploads/{id}/reprice?quantity=N` |
-| Quote history | `GET /uploads` (Bearer token) |
+| Load materials | `GET /materials` (public) |
+| Get price (guest or account) | `POST /uploads` with `X-Guest-Id` or Bearer token |
+| Poll status | `GET /uploads/{id}` with the same guest id or token |
+| Change instances | `POST /uploads/{id}/reprice?quantity=N` with the same guest id or token |
+| Quote history | `GET /uploads` (Bearer token only) |
 | Sign out / 401 | Clear token, redirect to `/login` |
 
 The API contract lives in [`../docs/api.md`](../docs/api.md).

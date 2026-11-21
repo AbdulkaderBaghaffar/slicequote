@@ -16,6 +16,7 @@ import { presetFor, sortMaterials } from '../data/materials'
 import { fmtMoney, fmtTime } from '../lib/format'
 import { ApiError, api, type ApiMaterial, type UploadJob } from '../lib/api'
 import { parseStl, type ParsedModel } from '../lib/stl'
+import { useAuth } from '../theme/AuthProvider'
 
 const StlViewer = lazy(() =>
   import('../components/StlViewer').then((module) => ({ default: module.StlViewer })),
@@ -39,8 +40,16 @@ function formatBytes(bytes: number): string {
 
 export function Quote() {
   const showToast = useToast()
+  const { isAuthenticated } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
-  const activeTab = searchParams.get('tab') === 'history' ? 'history' : 'quote'
+  const tabParam = searchParams.get('tab')
+  const activeTab = isAuthenticated && tabParam === 'history' ? 'history' : 'quote'
+
+  useEffect(() => {
+    if (!isAuthenticated && tabParam === 'history') {
+      setSearchParams({}, { replace: true })
+    }
+  }, [isAuthenticated, tabParam, setSearchParams])
 
   const [materials, setMaterials] = useState<ApiMaterial[]>([])
   const [materialsLoading, setMaterialsLoading] = useState(true)
@@ -435,7 +444,7 @@ export function Quote() {
 
   return (
     <section className="screen" aria-labelledby="quote-title">
-      <AppBar backTo="/" backLabel="Back to landing" showSignOut />
+      <AppBar backTo="/" backLabel="Back to landing" showAuthAction />
 
       <main className="container quote-wrap">
         <div className="quote-head">
@@ -449,22 +458,24 @@ export function Quote() {
                 : "Every model you've priced, newest first."}
             </p>
           </div>
-          <div className="quote-tabs" role="group" aria-label="Quote view">
-            <button
-              type="button"
-              aria-pressed={activeTab === 'quote'}
-              onClick={() => showTab('quote')}
-            >
-              Quote
-            </button>
-            <button
-              type="button"
-              aria-pressed={activeTab === 'history'}
-              onClick={() => showTab('history')}
-            >
-              History
-            </button>
-          </div>
+          {isAuthenticated && (
+            <div className="quote-tabs" role="group" aria-label="Quote view">
+              <button
+                type="button"
+                aria-pressed={activeTab === 'quote'}
+                onClick={() => showTab('quote')}
+              >
+                Quote
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeTab === 'history'}
+                onClick={() => showTab('history')}
+              >
+                History
+              </button>
+            </div>
+          )}
         </div>
 
         {activeTab === 'history' ? (

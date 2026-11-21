@@ -3,12 +3,10 @@ import { Brand } from '../components/Brand'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { ArrowRightIcon } from '../components/Icons'
 import { LANDING_MATERIAL_ORDER, MATERIAL_PRESETS } from '../data/materials'
-import { useAuth } from '../theme/AuthProvider'
 
 export function Landing() {
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
-  const quotePath = isAuthenticated ? '/quote' : '/login'
+  const quotePath = '/quote'
 
   return (
     <section className="screen" aria-labelledby="landing-title">
@@ -147,7 +145,7 @@ export function Landing() {
         <div className="container cta-inner">
           <div>
             <h2>Ready to see your number?</h2>
-            <p>Sign in and build a quote in under a minute.</p>
+            <p>Start a quote in under a minute — no account required.</p>
           </div>
           <button className="btn btn-primary" type="button" onClick={() => navigate(quotePath)}>
             Start a quote

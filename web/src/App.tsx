@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
@@ -22,20 +22,9 @@ function ScrollManager() {
   return null
 }
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
+function HistoryRedirect() {
   const { isAuthenticated } = useAuth()
-  const location = useLocation()
-
-  if (!isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: location.pathname + location.search }}
-      />
-    )
-  }
-  return children
+  return <Navigate to={isAuthenticated ? '/quote?tab=history' : '/quote'} replace />
 }
 
 export default function App() {
@@ -45,15 +34,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/quote"
-          element={
-            <ProtectedRoute>
-              <Quote />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/history" element={<Navigate to="/quote?tab=history" replace />} />
+        <Route path="/quote" element={<Quote />} />
+        <Route path="/history" element={<HistoryRedirect />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

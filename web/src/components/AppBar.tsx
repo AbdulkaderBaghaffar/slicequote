@@ -7,12 +7,12 @@ import { useAuth } from '../theme/AuthProvider'
 interface AppBarProps {
   backTo: '/' | '/login'
   backLabel: string
-  showSignOut?: boolean
+  showAuthAction?: boolean
 }
 
-export function AppBar({ backTo, backLabel, showSignOut = false }: AppBarProps) {
+export function AppBar({ backTo, backLabel, showAuthAction = false }: AppBarProps) {
   const navigate = useNavigate()
-  const { email, logout } = useAuth()
+  const { email, isAuthenticated, logout } = useAuth()
 
   function signOut() {
     logout()
@@ -34,15 +34,20 @@ export function AppBar({ backTo, backLabel, showSignOut = false }: AppBarProps) 
           <Brand />
         </div>
         <div className="app-bar-right">
-          {showSignOut && email && (
+          {showAuthAction && isAuthenticated && email && (
             <span className="app-user" title={email}>
               {email}
             </span>
           )}
           <ThemeToggle />
-          {showSignOut && (
+          {showAuthAction && isAuthenticated && (
             <button className="btn-link" type="button" onClick={signOut}>
               Sign out
+            </button>
+          )}
+          {showAuthAction && !isAuthenticated && (
+            <button className="btn-link" type="button" onClick={() => navigate('/login')}>
+              Sign in
             </button>
           )}
         </div>
