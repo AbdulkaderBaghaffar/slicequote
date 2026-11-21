@@ -5,7 +5,7 @@ import { ArrowLeftIcon } from './Icons'
 import { useAuth } from '../theme/AuthProvider'
 
 interface AppBarProps {
-  backTo: '/' | '/login'
+  backTo: '/' | '/login' | '/quote'
   backLabel: string
   showSignOut?: boolean
 }

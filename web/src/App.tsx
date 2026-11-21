@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
 import { Quote } from './pages/Quote'
+import { History } from './pages/History'
 import { useAuth } from './theme/AuthProvider'
 
 function ScrollManager() {
@@ -44,6 +45,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Quote />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
             </ProtectedRoute>
           }
         />

@@ -25,6 +25,7 @@ export interface UploadJob {
   id: number
   originalFilename: string
   materialId: number
+  materialName: string | null
   quantity: number
   status: UploadStatus
   estimatedPrice: number | null
@@ -189,6 +190,10 @@ export const api = {
 
   materials(signal?: AbortSignal) {
     return request<ApiMaterial[]>('/materials', { signal })
+  },
+
+  uploads(signal?: AbortSignal) {
+    return request<UploadJob[]>('/uploads', { signal })
   },
 
   createUpload(file: File, materialId: number, quantity: number) {

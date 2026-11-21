@@ -7,6 +7,7 @@ import {
   useState,
   type DragEvent,
 } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { CloseIcon, FileIcon, ResetViewIcon, UploadIcon } from '../components/Icons'
 import { useToast } from '../components/Toast'
@@ -37,6 +38,7 @@ function formatBytes(bytes: number): string {
 
 export function Quote() {
   const showToast = useToast()
+  const navigate = useNavigate()
 
   const [materials, setMaterials] = useState<ApiMaterial[]>([])
   const [materialsLoading, setMaterialsLoading] = useState(true)
@@ -444,6 +446,13 @@ export function Quote() {
             <h1 id="quote-title">Build your quote</h1>
             <p className="sub">Upload an STL, pick a material, and get a server-side price.</p>
           </div>
+          <button
+            className="btn btn-ghost"
+            type="button"
+            onClick={() => navigate('/history')}
+          >
+            History
+          </button>
         </div>
 
         <div className="quote-grid">

@@ -13,3 +13,12 @@ export function fmtTime(minutes: number): string {
   if (mins === 0) return `${hours}h`
   return `${hours}h ${mins}m`
 }
+
+export function fmtDate(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return '—'
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}

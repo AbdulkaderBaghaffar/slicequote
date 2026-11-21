@@ -99,7 +99,10 @@ With the backend running, the end-to-end flow is:
    `estimatedPrice` from the server — including the quantity total.
 7. Changing the instance count after a quote calls
    `POST /uploads/{id}/reprice`; no re-upload is needed.
-8. Sign out clears the token; an invalid/expired token returns you to `/login`.
+8. **History** (`/history`) lists the account's previous uploads with material,
+   quantity, status, price, and an expandable breakdown. In-progress rows
+   refresh automatically.
+9. Sign out clears the token; an invalid/expired token returns you to `/login`.
 
 ## Backend wiring
 
@@ -111,6 +114,7 @@ With the backend running, the end-to-end flow is:
 | Get price | `POST /uploads` multipart `file` + `materialId` + `quantity` |
 | Poll status | `GET /uploads/{id}` every 1.5 s |
 | Change instances | `POST /uploads/{id}/reprice?quantity=N` |
+| Quote history | `GET /uploads` (Bearer token) |
 | Sign out / 401 | Clear token, redirect to `/login` |
 
 The API contract lives in [`../docs/api.md`](../docs/api.md).
