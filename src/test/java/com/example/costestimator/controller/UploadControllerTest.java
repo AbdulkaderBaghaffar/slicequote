@@ -61,6 +61,7 @@ class UploadControllerTest {
     assertEquals(HttpStatus.CREATED.value(), res.statusCode());
     assertEquals("PENDING", jsonString(res.body(), "status"));
     assertEquals("part.stl", jsonString(res.body(), "originalFilename"));
+    assertEquals("PLA", jsonString(res.body(), "materialName"));
     assertTrue(res.body().contains("\"estimatedPrice\":null"));
     assertEquals(before + 1, countStoredFiles(), "file should land on disk");
   }

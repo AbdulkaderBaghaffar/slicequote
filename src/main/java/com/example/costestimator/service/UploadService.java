@@ -121,6 +121,7 @@ public class UploadService {
         u.getId(),
         u.getOriginalFilename(),
         u.getMaterial() == null ? null : u.getMaterial().getId(),
+        u.getMaterial() == null ? null : u.getMaterial().getName(),
         u.getQuantity() == null ? 1 : u.getQuantity(),
         u.getStatus(),
         u.getEstimatedPrice(),
