@@ -430,7 +430,6 @@ html[data-theme="dark"] .summary-note-row .spinner { border-color: rgba(255,255,
   text-transform: uppercase; padding: 3px 8px; border-radius: 999px;
   border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap;
 }
-.history-status.done { color: var(--accent-strong); border-color: var(--accent-strong); }
 .history-status.failed { color: var(--err); border-color: var(--err); }
 .history-status.working { color: var(--ink); border-color: var(--muted-2); }
 

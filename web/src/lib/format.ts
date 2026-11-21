@@ -1,7 +1,8 @@
 export function fmtMoney(value: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-SA', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'SAR',
+    currencyDisplay: 'code',
   }).format(value)
 }
 

@@ -82,6 +82,7 @@ Public. `200 OK` with `{"status":"UP"}`.
 ### `GET /materials`
 
 Requires a token. Returns the **active** materials available for selection.
+All monetary amounts in this API are in Saudi Riyals (SAR).
 
 ```json
 [
@@ -90,7 +91,7 @@ Requires a token. Returns the **active** materials available for selection.
 ```
 
 `density` is in g/cm³ and is used together with `costPerGram` for material
-pricing.
+pricing. `costPerGram` is in SAR per gram.
 
 ## Uploads
 
@@ -178,11 +179,11 @@ When `DONE`:
 }
 ```
 
-`estimatedPrice` and `breakdown.total` are for the requested `quantity`.
-`printSeconds` and `filamentCm3` remain per part. `breakdown.total` always
-equals the sum of `breakdown.lines[].amount` and equals `estimatedPrice`. Render
-`lines[]` generically; new labels such as `Minimum order` may appear without a
-frontend change.
+`estimatedPrice` and `breakdown.total` are for the requested `quantity` and are
+in SAR. `printSeconds` and `filamentCm3` remain per part. `breakdown.total`
+always equals the sum of `breakdown.lines[].amount` and equals
+`estimatedPrice`. Render `lines[]` generically; new labels such as
+`Minimum order` may appear without a frontend change.
 
 Material cost is calculated as:
 

@@ -146,6 +146,7 @@ The API contract lives in [`../docs/api.md`](../docs/api.md).
 - The backend pricing includes machine time, material cost
   (`filamentCm3 × density × costPerGram`), base fee, and the minimum-order
   adjustment. Material density and rates come from `GET /materials`.
+  All amounts are displayed in **SAR**.
 - JWTs are stored in `localStorage` because the API returns Bearer tokens. Use
   an HttpOnly cookie/session if you need stronger XSS protection.
 - There is no order/checkout endpoint yet; the estimate is not a binding offer.

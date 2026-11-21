@@ -179,41 +179,31 @@ export function Quote() {
   const canPrice = Boolean(priceFile) && materialId !== null && !busy && !parsing
   const pricingSample = file === null && sampleFile !== null
 
-  const statusLabel = repricing
-    ? 'Pricing'
-    : phase === 'uploading'
-      ? 'Uploading'
-      : phase === 'processing'
-        ? 'Slicing'
-        : phase === 'done'
-          ? 'Ready'
-          : phase === 'failed'
-            ? 'Failed'
-            : 'Not priced'
+  const statusLabel = busy
+    ? 'Calculating'
+    : phase === 'done'
+      ? 'Ready'
+      : phase === 'failed'
+        ? 'Failed'
+        : 'Not priced'
 
-  const statusTone = repricing
+  const statusTone = busy
     ? 'working'
     : phase === 'done'
       ? 'done'
       : phase === 'failed'
         ? 'failed'
-        : busy
-          ? 'working'
-          : 'idle'
+        : 'idle'
 
-  const priceButtonLabel = repricing
-    ? 'Pricing…'
-    : phase === 'uploading'
-      ? 'Uploading…'
-      : phase === 'processing'
-        ? 'Slicing…'
-        : phase === 'done'
-          ? 'Price again'
-          : phase === 'failed'
-            ? 'Try again'
-            : pricingSample
-              ? 'Price sample'
-              : 'Get price'
+  const priceButtonLabel = busy
+    ? 'Calculating…'
+    : phase === 'done'
+      ? 'Price again'
+      : phase === 'failed'
+        ? 'Try again'
+        : pricingSample
+          ? 'Price sample'
+          : 'Get price'
 
   function clearJob() {
     runRef.current += 1
@@ -607,7 +597,7 @@ export function Quote() {
                         <span className="n">{material.name}</span>
                         <span className="d">{materialPreset.tag}</span>
                         <span className="c">
-                          ${Number(material.costPerGram).toFixed(2)}/g
+                          {fmtMoney(Number(material.costPerGram))}/g
                         </span>
                       </button>
                     )
@@ -820,16 +810,10 @@ export function Quote() {
                     <span className="per" id="sumPer">not binding</span>
                   </span>
                 </div>
-                {(phase === 'uploading' || phase === 'processing') && (
+                {busy && (
                   <p className="summary-note summary-note-row">
                     <span className="spinner" />
-                    {phase === 'uploading' ? 'Uploading model…' : 'Slicing on the server…'}
-                  </p>
-                )}
-                {repricing && (
-                  <p className="summary-note summary-note-row">
-                    <span className="spinner" />
-                    Updating quantity…
+                    Calculating price…
                   </p>
                 )}
                 {phase === 'failed' && jobError && (

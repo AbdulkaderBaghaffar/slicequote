@@ -18,9 +18,8 @@ function statusLabel(status: UploadStatus): string {
     case 'FAILED':
       return 'Failed'
     case 'PROCESSING':
-      return 'Slicing'
     case 'PENDING':
-      return 'Pending'
+      return 'Calculating'
   }
 }
 
@@ -150,9 +149,11 @@ export function HistoryPanel({ onBackToQuote }: HistoryPanelProps) {
                 </div>
 
                 <div className="history-meta">
-                  <span className={`history-status ${statusTone(job.status)}`}>
-                    {statusLabel(job.status)}
-                  </span>
+                  {job.status !== 'DONE' && (
+                    <span className={`history-status ${statusTone(job.status)}`}>
+                      {statusLabel(job.status)}
+                    </span>
+                  )}
                   <span className="history-price">{ready ? total : '—'}</span>
                   <button
                     className="btn-link"
