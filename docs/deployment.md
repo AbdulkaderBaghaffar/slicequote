@@ -174,7 +174,7 @@ Store backups off the host and test restores.
 - Keep the backend and web ports loopback-only.
 - Use a strong `JWT_SECRET` and database password.
 - Keep `.env` out of git.
-- Keep the 10 MB STL / 12 MB request limit.
+- Keep the 100 MB STL / 102 MB request limit.
 - Consider Cloudflare rate limiting for `/api/auth/login`.
 - Add security headers at nginx (already set for content type, referrer, frame).
 - Review whether JWT-in-localStorage is acceptable for your threat model.
@@ -187,7 +187,7 @@ Store backups off the host and test restores.
 |---|---|
 | `502` from nginx | Is `app` healthy? `docker compose logs app` |
 | `403` on login through nginx | Host / forwarded headers; set the public origin in `CORS_ALLOWED_ORIGINS` |
-| `413` on upload | nginx `client_max_body_size 12m` |
+| `413` on upload | nginx `client_max_body_size 102m` |
 | `/login` 404 on refresh | nginx `try_files ... /index.html` |
 | Tunnel shows backend pages | Tunnel target is still `app:8080`; change to `web:80` |
 | API calls go to `localhost:8080` in production | The web image was built without `VITE_API_URL=/api` |

@@ -22,7 +22,7 @@ const StlViewer = lazy(() =>
 type QuotePhase = 'idle' | 'uploading' | 'processing' | 'done' | 'failed'
 
 const POLL_INTERVAL_MS = 1500
-const MAX_STL_BYTES = 10 * 1024 * 1024
+const MAX_STL_BYTES = 100 * 1024 * 1024
 const MAX_INSTANCES = 24
 
 function delay(ms: number) {
@@ -231,7 +231,7 @@ export function Quote() {
       return
     }
     if (nextFile.size > MAX_STL_BYTES) {
-      setModelError('STL files must be 10 MB or smaller.')
+      setModelError('STL files must be 100 MB or smaller.')
       return
     }
 
@@ -605,7 +605,7 @@ export function Quote() {
             <div className="opt-section">
               <div className="opt-label">
                 <span className="t">Model</span>
-                <span className="v">STL · 10 MB max</span>
+                <span className="v">STL · 100 MB max</span>
               </div>
               <input
                 ref={inputRef}
@@ -670,7 +670,7 @@ export function Quote() {
                   <span>
                     <b>Drop an STL</b> or click to browse
                   </span>
-                  <small>Binary or ASCII · max 10 MB</small>
+                  <small>Binary or ASCII · max 100 MB</small>
                 </button>
               )}
               {modelError && (

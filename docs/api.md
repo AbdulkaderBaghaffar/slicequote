@@ -100,7 +100,7 @@ Requires a token. `multipart/form-data` with:
 
 | Part | Type | Notes |
 |---|---|---|
-| `file` | file | STL, max 10MB |
+| `file` | file | STL, max 100MB |
 | `materialId` | number | from `GET /materials` |
 | `quantity` | number | optional, default `1`, range `1–24` |
 
@@ -202,6 +202,6 @@ Local defaults: `http://localhost:5173` (Vite dev) and
 
 ## Limits
 
-- STL upload: 10MB (request 12MB)
+- STL upload: 100MB (request 102MB)
 - Quantity: 1–24
 - Status polling: keep it to roughly one request per 1–2 seconds
