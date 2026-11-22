@@ -1,6 +1,10 @@
-# SliceQuote
+<p align="center">
+  <img src="docs/slicequote-lockup.svg" width="400" alt="SliceQuote">
+</p>
 
-> Backend service for a 3D-print cost estimation site. Pick a material, upload an STL, get a priced estimate back.
+<p align="center">
+  Backend service for a 3D-print cost estimation site. Pick a material, upload an STL, get a priced estimate back.
+</p>
 
 ## API
 
