@@ -3,14 +3,55 @@
 </p>
 
 <p align="center">
-  Backend service for a 3D-print cost estimation site. Pick a material, upload an STL, get a priced estimate back.
+  Pick a material, upload an STL, get a priced estimate back.
 </p>
+
+SliceQuote is a self-hostable quoting service for 3D printing. It slices every
+upload with PrusaSlicer, turns the result into material and machine costs, and
+returns an itemized estimate — with a live 3D preview and saved quote history.
+
+<!-- Screenshots: drop the images at docs/screenshots/landing.png and docs/screenshots/quote.png -->
+| Landing page | Quotation page |
+| :---: | :---: |
+| <img src="docs/screenshots/landing.png" width="400" alt="SliceQuote landing page"> | <img src="docs/screenshots/quote.png" width="400" alt="SliceQuote quotation page"> |
+
+## Quickstart
+
+Requires Docker with Compose v2 — nothing else. The image ships PrusaSlicer, and
+the database seeds itself on first boot.
+
+```bash
+git clone https://github.com/AbdulkaderBaghaffar/slicequote.git
+cd slicequote
+docker compose up -d
+```
+
+Open <http://localhost:3000>. The first boot takes about a minute while Postgres
+initialises and Flyway loads materials and pricing.
+
+```bash
+docker compose down       # stop
+docker compose down -v    # stop and wipe the database + uploads
+docker compose pull       # update to the latest published images
+```
+
+Port 3000 already in use? `WEB_PORT=3001 docker compose up -d`.
+
+`./start.sh` does the same and prints the URL once the app is healthy.
 
 ## API
 
 See [docs/api.md](docs/api.md) for the HTTP contract (endpoints, error shape, upload lifecycle).
 
-## Web client
+## Development
+
+Build both images from source instead of pulling the published ones:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+```
+
+### Web client
 
 The React frontend lives in [`web/`](web/) (Vite + React + TypeScript) and
 implements the Acid/Forest quotation design. It talks to this API for signup /
@@ -30,14 +71,10 @@ The API URL defaults to `http://localhost:8080` for development; override it wit
 
 ### Production
 
-```bash
-docker compose build
-docker compose up -d db app web
-```
-
-Open <http://localhost:3000>. The Cloudflare tunnel must target `http://web:80`.
-See [docs/deployment.md](docs/deployment.md) for the full deployment, security,
-backup, and troubleshooting guide.
+The Cloudflare tunnel must target `http://web:80`; enable it with
+`docker compose --profile tunnel up -d`. See
+[docs/deployment.md](docs/deployment.md) for the full deployment, environment
+overrides, backups, and troubleshooting guide.
 
 ---
 
@@ -46,7 +83,7 @@ backup, and troubleshooting guide.
 
 - **Java 21 + Spring Boot** 
 - **React 19 + Vite + TypeScript** (`web/`)
-- **Postgres 16**
+- **Postgres 17**
 - **JWT** 
 - **PrusaSlicer CLI**
 - **Docker** 

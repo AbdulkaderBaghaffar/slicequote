@@ -1,0 +1,10 @@
+# Source build overlay:
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+services:
+  app:
+    build: .
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_URL: /api

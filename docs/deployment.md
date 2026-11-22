@@ -35,19 +35,26 @@ internal Compose network.
 | `db` | No | Postgres, `pgdata` volume |
 | `app` | Loopback only (`127.0.0.1:8080`) | Spring Boot + PrusaSlicer |
 | `web` | Loopback `:3000` + tunnel | nginx + React build |
-| `slicequote-cloudlfared` | Outbound | Cloudflare tunnel |
+| `cloudflared` | Outbound | Opt-in: `--profile tunnel` |
 
 The backend and web host ports are bound to loopback for local testing. The
 tunnel reaches `web:80` over the Compose network, not through the host port.
 
-## Build and run locally
+## Run locally
 
 ```bash
-docker compose build
-docker compose up -d db app web
+docker compose up -d
 ```
 
-Open <http://localhost:3000>.
+Open <http://localhost:3000>. No `.env` is needed: Compose supplies local
+defaults for the database, JWT secret, and CORS. The first boot takes about a
+minute while Postgres initialises and Flyway seeds the data.
+
+Build from source instead of pulling the published images:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+```
 
 The API is same-origin:
 
@@ -80,27 +87,50 @@ Keep the token in `.env` and out of git.
 
 ## Environment
 
-`app` reads `.env` through `env_file`. Required values:
+Local runs need no `.env`: `docker-compose.yml` has working defaults for every
+value. For production, create `.env` next to the compose file — Compose loads it
+automatically for `${...}` interpolation.
 
 ```dotenv
 DB_NAME=slicequote
-DB_URL=jdbc:postgresql://db:5432/slicequote
 DB_USER=postgres
 DB_PASSWORD=...
 JWT_SECRET=...              # 32+ bytes
-STORAGE_ROOT=/app/uploads
 CORS_ALLOWED_ORIGINS=https://your-domain.example
 CLOUDFLARED_TOKEN=...
 ```
 
-For local dev, `CORS_ALLOWED_ORIGINS` can stay:
-
-```dotenv
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:4173,http://localhost:3000
-```
+`DB_URL` is derived from `DB_NAME`. Override `DB_URL` only if Postgres runs
+outside this Compose project.
 
 Behind nginx the browser is same-origin, so CORS normally does not run. Adding
 the public HTTPS origin is still recommended if the API is ever called directly.
+
+## Uploads
+
+Uploads live in the `uploads` Docker volume, not `./data/uploads`. Back them up
+with:
+
+```bash
+docker compose exec -T app tar czf - -C /app/uploads . > uploads-backup.tgz
+```
+
+Migrating existing files from the old bind mount (one time):
+
+```bash
+docker compose stop app
+docker run --rm \
+  -v slicequote_uploads:/to \
+  -v "$PWD/data/uploads:/from:ro" \
+  alpine sh -c 'cp -a /from/. /to/ && chown -R 1001:1001 /to'
+docker compose up -d
+```
+
+The volume is named `<compose-project>_uploads`. If your checkout directory is
+not `slicequote`, find it with `docker volume ls | grep uploads` and use that
+name above. A bind mount is still possible with a production override file; in
+that case keep the old `user: "1000:1000"` so the container can write to the
+host directory.
 
 ## API path mapping
 
@@ -120,7 +150,7 @@ Nginx strips the prefix:
 /api/uploads/42/reprice  → app:8080/uploads/42/reprice
 ```
 
-Uploads are limited to 12 MB at nginx, matching Spring's multipart limit.
+Uploads are limited to 102 MB at nginx, matching Spring's 100 MB multipart limit.
 
 ## Deployment
 
@@ -136,13 +166,15 @@ Typical rollout:
 
 ```bash
 docker compose pull
-docker compose up -d db
-docker compose up -d app
-docker compose up -d web
-docker compose up -d slicequote-cloudlfared
+docker compose up -d db app web
+docker compose --profile tunnel up -d
 ```
 
-Flyway runs on app startup (V1–V9). Back up the database before a deployment
+The tunnel service was renamed from the misspelled `slicequote-cloudlfared` to
+`cloudflared`. Remove a leftover container once with
+`docker rm -f slicequote-slicequote-cloudlfared-1` if it still exists.
+
+Flyway runs on app startup (V1–V12). Back up the database before a deployment
 that includes migrations.
 
 Health checks:
@@ -164,7 +196,7 @@ docker compose exec -T db sh -c \
 Uploads:
 
 ```bash
-tar czf uploads-backup.tgz data/uploads
+docker compose exec -T app tar czf - -C /app/uploads . > uploads-backup.tgz
 ```
 
 Store backups off the host and test restores.
@@ -186,6 +218,8 @@ Store backups off the host and test restores.
 
 | Symptom | Check |
 |---|---|
+| `port is already allocated` | Set `WEB_PORT=3001` (and/or `API_PORT=8099`) when starting |
+| Upload fails with a permission error | Use the `uploads` volume; a root-owned bind mount is not writable by the app user |
 | `502` from nginx | Is `app` healthy? `docker compose logs app` |
 | `403` on login through nginx | Host / forwarded headers; set the public origin in `CORS_ALLOWED_ORIGINS` |
 | `413` on upload | nginx `client_max_body_size 102m` |
