@@ -134,12 +134,9 @@ html[data-theme="dark"] .theme-toggle .ic-moon { display: none; }
 .field-error { display: none; font-size: 13.5px; color: var(--err); }
 .field-error:not(:empty) { display: block; }
 .field-help { font-size: 13px; color: var(--muted); }
-.error-summary { display: none; background: var(--err-soft); border: 1px solid #f3b8b3; color: var(--err); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); font-size: 14px; }
-.error-summary ul { margin: 6px 0 0; padding-left: 18px; }
+.error-summary { display: none; background: var(--err-soft); border: 1px solid #f3b8b3; color: var(--err); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); font-size: 14px; }.error-summary ul { margin: 6px 0 0; padding-left: 18px; }
 .error-summary a { color: var(--err); font-weight: 600; }
 .auth-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); }
-.demo-hint { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--surface-2); border-radius: var(--radius-sm); font-size: 13.5px; color: var(--muted); }
-.demo-hint b { color: var(--ink); }
 
 /* ===================== Quotation ===================== */
 .quote-wrap { padding-block: var(--space-6) var(--space-7); }
@@ -267,27 +264,16 @@ html[data-theme="dark"] .theme-toggle .ic-moon { display: none; }
   max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-.auth-tabs {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
-  padding: 3px; margin-bottom: var(--space-5);
-  background: var(--surface-2); border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+.auth-meta {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--space-2); flex-wrap: wrap;
+  margin-top: calc(-1 * var(--space-2)); margin-bottom: var(--space-4);
+  min-height: 20px; font-size: 13px; color: var(--muted);
 }
-.auth-tabs button {
-  min-height: 40px; border: 0; border-radius: 7px; padding: 8px 10px;
-  background: transparent; color: var(--muted); cursor: pointer;
-  font-family: var(--font-body); font-size: 14px; font-weight: 600;
-  transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
-}
-.auth-tabs button:hover { color: var(--ink); }
-.auth-tabs button[aria-pressed="true"] {
-  background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm);
-}
-.auth-error-hint { margin-top: 4px; font-size: 13px; }
-.auth-error-hint button {
-  background: none; border: 0; padding: 0; color: inherit;
-  font-family: var(--font-body); font-size: inherit; font-weight: 700;
-  text-decoration: underline; cursor: pointer;
+.auth-credential-error { color: var(--err); font-weight: 500; }
+.auth-switch-inline { margin-left: auto; }
+.auth-switch-inline .btn-link {
+  min-height: 0; padding: 2px 0; font-size: 13px;
 }
 .auth-guest {
   display: grid; gap: var(--space-2); margin-top: var(--space-3);

@@ -117,8 +117,8 @@ export function Login() {
           setErrors((current) => ({ ...current, email: error.message }))
           setSummaryErrors([{ id: 'email', message: error.message }])
         } else if (error.status === 401) {
-          setFormError('Invalid email or password.')
           setCredentialError(true)
+          window.requestAnimationFrame(() => passwordRef.current?.focus())
         } else {
           setFormError(error.message)
         }
@@ -139,23 +139,6 @@ export function Login() {
 
       <main className="container auth-wrap">
         <form className="auth-card" id="loginForm" noValidate onSubmit={handleSubmit}>
-          <div className="auth-tabs" role="group" aria-label="Account access">
-            <button
-              type="button"
-              aria-pressed={mode === 'login'}
-              onClick={() => switchMode('login')}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              aria-pressed={mode === 'signup'}
-              onClick={() => switchMode('signup')}
-            >
-              Create account
-            </button>
-          </div>
-
           <h1 id="login-title">
             {mode === 'login' ? 'Sign in to get your quote' : 'Create your SliceQuote account'}
           </h1>
@@ -174,14 +157,6 @@ export function Login() {
             style={hasErrors ? { display: 'block' } : undefined}
           >
             {formError && <p>{formError}</p>}
-            {credentialError && (
-              <p className="auth-error-hint">
-                Don’t have an account yet?{' '}
-                <button type="button" onClick={() => switchMode('signup')}>
-                  Create one
-                </button>
-              </p>
-            )}
             {summaryErrors.length > 0 && (
               <>
                 <strong>Please fix the following:</strong>
@@ -230,6 +205,7 @@ export function Login() {
                   setEmail(event.target.value)
                   if (errors.email) setErrors((current) => ({ ...current, email: undefined }))
                   if (formError) setFormError(null)
+                  if (credentialError) setCredentialError(false)
                 }}
                 onBlur={validateEmail}
               />
@@ -250,7 +226,7 @@ export function Login() {
                 name="password"
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 maxLength={72}
-                placeholder={mode === 'login' ? '8+ characters' : '8–72 characters'}
+                placeholder="8+ characters"
                 aria-describedby="passwordErr"
                 aria-invalid={Boolean(errors.password)}
                 aria-required="true"
@@ -262,6 +238,7 @@ export function Login() {
                     setErrors((current) => ({ ...current, password: undefined }))
                   }
                   if (formError) setFormError(null)
+                  if (credentialError) setCredentialError(false)
                 }}
                 onBlur={validatePassword}
               />
@@ -279,10 +256,28 @@ export function Login() {
             <p className="field-error" id="passwordErr">{errors.password ?? ''}</p>
           </div>
 
+          <div className="auth-meta">
+            {credentialError && (
+              <span className="auth-credential-error" role="alert">
+                Invalid email or password.
+              </span>
+            )}
+            <span className="auth-switch-inline">
+              {mode === 'login' ? 'New to SliceQuote?' : 'Already have an account?'}{' '}
+              <button
+                className="btn-link"
+                type="button"
+                onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+              >
+                {mode === 'login' ? 'Create an account' : 'Sign in'}
+              </button>
+            </span>
+          </div>
+
           <button className="btn btn-primary btn-block" type="submit" id="loginBtn" disabled={submitting}>
             {!submitting && (
               <span id="loginBtnLabel">
-                {mode === 'login' ? 'Continue to quote' : 'Create account'}
+                {mode === 'login' ? 'Sign in' : 'Create account'}
               </span>
             )}
             {submitting && <span className="spinner" id="loginSpinner" />}
@@ -296,7 +291,6 @@ export function Login() {
             >
               Continue as guest
             </button>
-            <p className="field-help">Guest quotes aren’t saved to your history.</p>
           </div>
 
           <div className="auth-row">
@@ -304,13 +298,6 @@ export function Login() {
               Back to home
             </button>
           </div>
-
-          <p className="demo-hint">
-            <b>Note:</b>{' '}
-            {mode === 'login'
-              ? 'Your quotes are private to your account. Prices are estimates, not binding offers.'
-              : 'Passwords must be 8–72 characters. Prices are estimates, not binding offers.'}
-          </p>
         </form>
       </main>
     </section>
