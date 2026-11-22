@@ -288,6 +288,17 @@ export function Login() {
             {submitting && <span className="spinner" id="loginSpinner" />}
           </button>
 
+          <div className="auth-guest">
+            <button
+              className="btn btn-ghost btn-block"
+              type="button"
+              onClick={() => navigate('/quote')}
+            >
+              Continue as guest
+            </button>
+            <p className="field-help">Guest quotes aren’t saved to your history.</p>
+          </div>
+
           <div className="auth-row">
             <button className="btn-link" type="button" onClick={() => navigate('/')}>
               Back to home

@@ -3,10 +3,12 @@ import { Brand } from '../components/Brand'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { ArrowRightIcon } from '../components/Icons'
 import { LANDING_MATERIAL_ORDER, MATERIAL_PRESETS } from '../data/materials'
+import { useAuth } from '../theme/AuthProvider'
 
 export function Landing() {
   const navigate = useNavigate()
-  const quotePath = '/quote'
+  const { isAuthenticated } = useAuth()
+  const quotePath = isAuthenticated ? '/quote' : '/login'
 
   return (
     <section className="screen" aria-labelledby="landing-title">
@@ -94,18 +96,18 @@ export function Landing() {
         <div className="steps">
           <div className="step">
             <span className="step-num">01</span>
-            <h3>Specify your part</h3>
-            <p>Set the bounding dimensions, infill, and quantity for the geometry you need printed.</p>
+            <h3>Upload your model</h3>
+            <p>Drop in an STL and we read its dimensions and prepare it for slicing.</p>
           </div>
           <div className="step">
             <span className="step-num">02</span>
             <h3>Choose a material</h3>
-            <p>Pick from PLA, PETG, TPU, or ABS and a finish color that matches your use case.</p>
+            <p>Pick from PLA, PETG, TPU, or ABS and set how many instances you need.</p>
           </div>
           <div className="step">
             <span className="step-num">03</span>
-            <h3>Get your price</h3>
-            <p>See the machine time, material usage, and fees behind the total before you print.</p>
+            <h3>Get quote</h3>
+            <p>Create an account to keep your history, or continue as a guest for a one-off estimate.</p>
           </div>
         </div>
       </section>
