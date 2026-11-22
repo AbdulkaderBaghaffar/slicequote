@@ -1,0 +1,177 @@
+# SliceQuote — web client
+
+React implementation of the LayerForge quotation design produced in the
+OpenDesign project `b45df71d-cdad-4614-ab2a-4e098d9cda8b`, now connected to the
+SliceQuote Spring Boot API.
+
+- **Acid** — light mode, the default.
+- **Forest** — dark mode.
+- `html[data-theme="light" | "dark"]`, persisted in `localStorage["lf-theme"]`.
+- Newsreader / Space Grotesk / Spline Sans Mono type stack.
+- Landing → Login → Quotation routes (`/`, `/login`, `/quote`).
+- JWT auth, live materials, STL upload, server-side slicing, status polling,
+  and the backend's price breakdown.
+
+The brand name is **SliceQuote**; the original design used the placeholder name
+LayerForge.
+
+## Run the backend first
+
+```bash
+cd ..                 # repository root
+docker compose up -d db app
+curl http://localhost:8080/actuator/health
+```
+
+The compose stack serves the API at <http://localhost:8080> and seeds the `PLA`
+material. `prusa-slicer` runs inside the app image.
+
+## Run the frontend
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Vite serves <http://localhost:5173/> — exactly the origin allowed by the
+backend's default `CORS_ALLOWED_ORIGINS`. Open it through `localhost`, not
+`127.0.0.1`, unless you add that origin to the backend config.
+
+The API base URL defaults to `http://localhost:8080`. Override it with
+`web/.env.local`:
+
+```bash
+VITE_API_URL=https://your-api.example.com
+```
+
+## Build and preview
+
+```bash
+npm run build
+npm run preview
+```
+
+`npm run preview` serves the production build at <http://localhost:4173/>.
+For a real static host, configure an SPA fallback so `/login` and `/quote`
+resolve to `index.html`.
+
+## Production container
+
+```bash
+docker compose build web
+docker compose up -d web
+```
+
+Open <http://localhost:3000> (loopback only). The nginx image is built with:
+
+```text
+VITE_API_URL=/api
+```
+
+so the browser calls `/api/auth/login`, `/api/materials`, etc. on the same
+origin. nginx proxies `/api/*` to `http://app:8080/*` over the Compose network,
+so production does not depend on browser CORS.
+
+If you build the image manually:
+
+```bash
+docker build --build-arg VITE_API_URL=/api -t slicequote-web web
+```
+
+
+## Verify
+
+```bash
+npm run typecheck
+npm run build
+```
+
+With the backend running, the end-to-end flow is:
+
+1. Open `/quote` directly — no account required. Guests can price the sample
+   and upload their own STL.
+2. Signed-in users can create an account from the quote app bar. Accounts keep
+   quote history.
+3. Materials load from `GET /materials` (public).
+4. Drop an STL → parsed in the browser → 3D preview + bounding box.
+5. **Get price** → `POST /uploads` with `quantity`, then poll
+   `GET /uploads/{id}` until `DONE`/`FAILED`.
+6. The summary renders `filamentCm3`, `printSeconds`, `breakdown.lines`, and
+   `estimatedPrice` from the server — including the quantity total.
+7. Changing the instance count after a quote calls
+   `POST /uploads/{id}/reprice`; no re-upload is needed.
+8. **History** is a tab on `/quote` and is only shown to signed-in users. It
+   lists previous uploads with material, quantity, status, price, and an
+   expandable breakdown. In-progress rows refresh automatically. `/history`
+   redirects to `/quote?tab=history` for accounts and `/quote` for guests.
+9. Sign out clears the token; an invalid/expired token returns you to `/login`.
+
+## Guest mode
+
+- `/quote` is public.
+- The browser stores a random guest id under `localStorage["sq-guest-id"]` and
+  sends it as `X-Guest-Id`.
+- Guest uploads are private to that id; they are not attached to an account and
+  do not appear in account history.
+- The History tab is hidden for guests.
+- The quote app bar shows **Sign in** instead of **Sign out**.
+- Guests can still price the Benchy sample and upload their own STL.
+
+## Backend wiring
+
+| UI action | API call |
+|---|---|
+| Sign in | `POST /auth/login` |
+| Create account | `POST /auth/signup` |
+| Load materials | `GET /materials` (public) |
+| Get price (guest or account) | `POST /uploads` with `X-Guest-Id` or Bearer token |
+| Poll status | `GET /uploads/{id}` with the same guest id or token |
+| Change instances | `POST /uploads/{id}/reprice?quantity=N` with the same guest id or token |
+| Quote history | `GET /uploads` (Bearer token only) |
+| Sign out / 401 | Clear token, redirect to `/login` |
+
+The API contract lives in [`../docs/api.md`](../docs/api.md).
+
+## Notes and limits
+
+- The **Estimate** panel is hidden until **Get price** is pressed. It then shows
+  upload/slicing status and the returned server-side quote.
+- The **Preview color** swatches and the 3D mesh color are cosmetic; the backend
+  does not accept a color.
+- The 3D viewport uses Three.js `OrbitControls`: drag/touch to orbit,
+  wheel/pinch to zoom, and right-drag/two-finger drag to pan. The reset-view
+  button restores the camera.
+- The quote viewport opens with a web-optimized **3DBenchy** sample (19k
+  triangles, CC0) until you upload an STL. **Price sample** sends that STL
+  through the real upload/slicing flow, so you can test a quote without
+  uploading a file. Source and license details are in
+  [`public/models/README.md`](public/models/README.md).
+- The quote is for one uploaded model, with an instance count priced by the
+  backend. Dimensions and infill are not client inputs: the server reads them
+  from the STL and its slicer profile.
+- Instance changes after a quote are recalculated by
+  `POST /uploads/{id}/reprice`; the frontend only renders the server total and
+  breakdown.
+- The bounding box is computed client-side from the STL and assumes millimetres.
+- The landing page's material cards are static marketing content. The live
+  material list on `/quote` comes from the server.
+- The backend pricing includes machine time, material cost
+  (`filamentCm3 × density × costPerGram`), base fee, and the minimum-order
+  adjustment. Material density and rates come from `GET /materials`.
+  All amounts are displayed in **SAR**.
+- JWTs are stored in `localStorage` because the API returns Bearer tokens. Use
+  an HttpOnly cookie/session if you need stronger XSS protection.
+- There is no order/checkout endpoint yet; the estimate is not a binding offer.
+
+## Structure
+
+```text
+src/
+  components/   AppBar, Brand, PartSvg, StlViewer, ThemeToggle, Toast, Icons
+  data/         Marketing material presets + presentation colors
+  lib/          API client, STL parser, color shading, formatting
+  pages/        Landing, Login, Quote
+  styles/       Design tokens + component CSS
+  theme/        Acid/Forest and auth providers
+```

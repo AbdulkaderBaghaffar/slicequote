@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.costestimator.pricing.PricingService;
 import com.example.costestimator.pricing.calc.PriceBreakdown;
 import com.example.costestimator.data.Material;
 import com.example.costestimator.data.Upload;
@@ -23,21 +24,26 @@ import com.example.costestimator.repository.UploadRepository;
 @Service
 public class UploadService {
 
+  private static final int MAX_QUANTITY = 24;
+
   private final UploadRepository uploadRepository;
   private final MaterialRepository materialRepository;
   private final StlValidator stlValidator;
   private final UploadWorker uploadWorker;
+  private final PricingService pricingService;
   private final String storageRoot;
 
   public UploadService(UploadRepository uploadRepository,
       MaterialRepository materialRepository,
       StlValidator stlValidator,
       UploadWorker uploadWorker,
+      PricingService pricingService,
       @Value("${storage.root}") String storageRoot) {
     this.uploadRepository = uploadRepository;
     this.materialRepository = materialRepository;
     this.stlValidator = stlValidator;
     this.uploadWorker = uploadWorker;
+    this.pricingService = pricingService;
     this.storageRoot = storageRoot;
   }
 
@@ -47,7 +53,9 @@ public class UploadService {
         .toList();
   }
 
-  public UploadResponse addUpload(MultipartFile file, Long materialId, Long ownerId) {
+  public UploadResponse addUpload(MultipartFile file, Long materialId, int quantity,
+      Long ownerId, String guestKey) {
+    int validQuantity = validateQuantity(quantity);
     if (!stlValidator.validate(file)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "not a valid STL");
     }
@@ -67,8 +75,10 @@ public class UploadService {
     upload.setOriginalFilename(file.getOriginalFilename());
     upload.setStoredFilename(storedName);
     upload.setStatus(UploadStatus.PENDING);
+    upload.setQuantity(validQuantity);
     upload.setMaterial(material);
     upload.setOwnerId(ownerId);
+    upload.setGuestKey(ownerId == null ? guestKey : null);
     upload.setCreatedAt(Instant.now());
 
     Upload saved = uploadRepository.save(upload);
@@ -76,10 +86,46 @@ public class UploadService {
     return toResponse(saved);
   }
 
-  public UploadResponse getUpload(Long id, Long ownerId) {
-    return uploadRepository.findByIdAndOwnerId(id, ownerId)
-        .map(this::toResponse)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+  public UploadResponse reprice(Long id, int quantity, Long ownerId, String guestKey) {
+    int validQuantity = validateQuantity(quantity);
+    Upload upload = findAuthorized(id, ownerId, guestKey);
+
+    if (upload.getStatus() != UploadStatus.DONE || upload.getPrintSeconds() == null) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
+          "upload is not ready to reprice");
+    }
+
+    upload.setQuantity(validQuantity);
+    PriceBreakdown breakdown = pricingService.priceFor(upload);
+    upload.setEstimatedPrice(breakdown.total());
+    upload.setPriceBreakdown(breakdown.lines());
+
+    return toResponse(uploadRepository.save(upload));
+  }
+
+  private Upload findAuthorized(Long id, Long ownerId, String guestKey) {
+    if (ownerId != null) {
+      return uploadRepository.findByIdAndOwnerId(id, ownerId)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+    if (guestKey != null && !guestKey.isBlank()) {
+      return uploadRepository.findByIdAndGuestKey(id, guestKey)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+        "Authentication or guest id required");
+  }
+
+  private static int validateQuantity(int quantity) {
+    if (quantity < 1 || quantity > MAX_QUANTITY) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "quantity must be between 1 and " + MAX_QUANTITY);
+    }
+    return quantity;
+  }
+
+  public UploadResponse getUpload(Long id, Long ownerId, String guestKey) {
+    return toResponse(findAuthorized(id, ownerId, guestKey));
   }
 
   private UploadResponse toResponse(Upload u) {
@@ -87,6 +133,8 @@ public class UploadService {
         u.getId(),
         u.getOriginalFilename(),
         u.getMaterial() == null ? null : u.getMaterial().getId(),
+        u.getMaterial() == null ? null : u.getMaterial().getName(),
+        u.getQuantity() == null ? 1 : u.getQuantity(),
         u.getStatus(),
         u.getEstimatedPrice(),
         u.getErrorMessage(),

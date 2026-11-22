@@ -1,0 +1,123 @@
+/* ===================== Design tokens ===================== */
+/* One theme, two modes: "Acid" (light, default) and "Forest" (dark).
+   Same structure/type/spacing in both — only palette + part lighting change. */
+:root {
+  /* Acid — light mode */
+  --ink: #1c2308;
+  --ink-2: #24300d;
+  --paper: #f4f7e6;
+  --surface: #ffffff;
+  --surface-2: #edf2d2;
+  --line: #dfe7c4;
+  --line-strong: #c9d69a;
+  --muted: #57613a;
+  --muted-2: #6b7450;
+
+  --accent: #a3e635;          /* lime action fill — dark text ≥ 4.5:1 */
+  --accent-strong: #4d7c0f;   /* olive accent text on light — ≥ 4.5:1 */
+  --accent-fg: #1c2308;       /* text on accent fill */
+  --accent-soft: rgba(163, 230, 53, .22);
+  --accent-line: #c9d69a;
+
+  --dark: #e9f0d2;            /* light studio stage (hero / viewport / summary) */
+  --dark-2: #eef3d6;
+  --dark-3: #f4f7e6;
+  --dark-line: #c9d69a;
+  --on-dark: #1c2308;
+  --on-dark-muted: #57613a;
+
+  --p-top: #a3e635; --p-side-r: #65a30d; --p-side-l: #3f6212;
+  --p-hole: #e9f0d2; --p-line: rgba(28, 35, 8, .16);
+  --part-shadow: rgba(28, 35, 8, .20);
+  --gridline: rgba(28, 35, 8, .06);
+
+  --ok: #3f6212;
+  --err: #b42318;
+  --err-soft: #fdecea;
+
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-body: "Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, Menlo, monospace;
+
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-sm: 10px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --container: 1200px;
+  --shadow-sm: 0 1px 2px rgba(18, 21, 25, .06), 0 1px 3px rgba(18, 21, 25, .08);
+  --shadow-md: 0 6px 18px -6px rgba(18, 21, 25, .14);
+  --shadow-lg: 0 24px 48px -16px rgba(18, 21, 25, .22);
+
+  --ease-out: cubic-bezier(.22, .9, .3, 1);
+  --ease-in: cubic-bezier(.55, 0, .75, .4);
+}
+
+html[data-theme="dark"] {
+  /* Forest — dark mode */
+  --ink: #eef4ee;
+  --ink-2: #dbe6dc;
+  --paper: #0c160f;
+  --surface: #14221a;
+  --surface-2: #1c2e22;
+  --line: #26382c;
+  --line-strong: #354a3c;
+  --muted: #97a99b;
+  --muted-2: #8aa08d;
+
+  --accent: #84cc16;
+  --accent-strong: #a3e635;
+  --accent-fg: #0c160f;
+  --accent-soft: rgba(132, 204, 22, .16);
+  --accent-line: #354a3c;
+
+  --dark: #0c160f;
+  --dark-2: #14221a;
+  --dark-3: #1c2e22;
+  --dark-line: #26382c;
+  --on-dark: #eef4ee;
+  --on-dark-muted: #97a99b;
+
+  --p-top: #bef264; --p-side-r: #65a30d; --p-side-l: #3f6212;
+  --p-hole: #0c160f; --p-line: rgba(255, 255, 255, .18);
+  --part-shadow: rgba(0, 0, 0, .5);
+  --gridline: rgba(255, 255, 255, .05);
+
+  --ok: #a3e635;
+  --err: #f87171;
+  --err-soft: rgba(248, 113, 113, .12);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out);
+}
+#root { min-height: 100vh; }
+
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--ink); line-height: 1.12; letter-spacing: -0.02em; margin: 0; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent-strong); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--space-5); }
+.mono { font-family: var(--font-mono); }
+
+:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; border-radius: 4px; }

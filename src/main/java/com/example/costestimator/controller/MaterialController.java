@@ -24,7 +24,7 @@ public class MaterialController {
 
   @GetMapping("/materials") // when get request at materials return this
   public List<Material> listMaterials() {
-    return materialRepository.findAll();
+    return materialRepository.findByActiveTrue();
   }
 
   @PostMapping("/materials")

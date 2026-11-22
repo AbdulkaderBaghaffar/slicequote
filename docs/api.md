@@ -81,24 +81,40 @@ Public. `200 OK` with `{"status":"UP"}`.
 
 ### `GET /materials`
 
-Requires a token.
+Public. Returns the **active** materials available for selection.
+All monetary amounts in this API are in Saudi Riyals (SAR).
 
 ```json
 [
-  { "id": 1, "name": "PLA", "costPerGram": 0.025 }
+  { "id": 1, "name": "PLA", "costPerGram": 0.03, "density": 1.24, "active": true }
 ]
 ```
+
+`density` is in g/cm³ and is used together with `costPerGram` for material
+pricing. `costPerGram` is in SAR per gram.
+
+## Guest access
+
+Quote endpoints accept either:
+
+- `Authorization: Bearer <token>` for an account, or
+- `X-Guest-Id: <random-client-key>` for a guest.
+
+Guest uploads are private to that key, are not attached to an account, and are
+not returned by `GET /uploads` (history is account-only). A guest key should be
+an unguessable random string, max 64 characters.
 
 ## Uploads
 
 ### `POST /uploads`
 
-Requires a token. `multipart/form-data` with:
+Accepts a Bearer token or `X-Guest-Id`. `multipart/form-data` with:
 
 | Part | Type | Notes |
 |---|---|---|
-| `file` | file | STL, max 10MB |
+| `file` | file | STL, max 100MB |
 | `materialId` | number | from `GET /materials` |
+| `quantity` | number | optional, default `1`, range `1–24` |
 
 Do not set `Content-Type` manually; the browser must add the multipart boundary.
 
@@ -109,6 +125,8 @@ Do not set `Content-Type` manually; the browser must add the multipart boundary.
   "id": 42,
   "originalFilename": "cube.stl",
   "materialId": 1,
+  "materialName": "PLA",
+  "quantity": 1,
   "status": "PENDING",
   "estimatedPrice": null,
   "errorMessage": null,
@@ -121,11 +139,25 @@ Do not set `Content-Type` manually; the browser must add the multipart boundary.
 
 ### `GET /uploads`
 
-Requires a token. Returns the caller's uploads, newest first.
+Requires a token. Returns the caller's uploads, newest first. Guest uploads are
+not included.
 
 ### `GET /uploads/{id}`
 
-Requires a token. Returns one upload owned by the caller, or `404`.
+Accepts a Bearer token or `X-Guest-Id`. Returns one upload owned by the caller or
+guest key, otherwise `404`.
+
+### `POST /uploads/{id}/reprice`
+
+Accepts a Bearer token or `X-Guest-Id`. Recalculates a completed upload for a
+new quantity without re-slicing. Query parameter:
+
+| Param | Type | Notes |
+|---|---|---|
+| `quantity` | number | default `1`, range `1–24` |
+
+`200 OK` with the updated `UploadResponse`. Returns `409` if the upload is not
+`DONE`.
 
 ## Upload status
 
@@ -141,13 +173,16 @@ When `DONE`:
   "id": 42,
   "originalFilename": "cube.stl",
   "materialId": 1,
+  "materialName": "PLA",
+  "quantity": 3,
   "status": "DONE",
-  "estimatedPrice": 0.42,
+  "estimatedPrice": 1.28,
   "errorMessage": null,
   "breakdown": {
-    "total": 0.42,
+    "total": 1.28,
     "lines": [
-      { "label": "Machine time", "amount": 0.37 },
+      { "label": "Machine time", "amount": 1.11 },
+      { "label": "Material cost", "amount": 0.12 },
       { "label": "Base fee", "amount": 0.05 }
     ]
   },
@@ -157,9 +192,19 @@ When `DONE`:
 }
 ```
 
-`breakdown.total` always equals the sum of `breakdown.lines[].amount` and
-equals `estimatedPrice`. Render `lines[]` generically; new labels such as
+`estimatedPrice` and `breakdown.total` are for the requested `quantity` and are
+in SAR. `printSeconds` and `filamentCm3` remain per part. `breakdown.total`
+always equals the sum of `breakdown.lines[].amount` and equals
+`estimatedPrice`. Render `lines[]` generically; new labels such as
 `Minimum order` may appear without a frontend change.
+
+Material cost is calculated as:
+
+```text
+materialCost = filamentCm3 × quantity × density × costPerGram
+```
+
+where `density` is the material row's g/cm³ value.
 
 When `FAILED`, `errorMessage` is set and both `breakdown` and
 `estimatedPrice` are `null`.
@@ -167,10 +212,12 @@ When `FAILED`, `errorMessage` is set and both `breakdown` and
 ## CORS
 
 Allowed origins come from `CORS_ALLOWED_ORIGINS` (comma-separated).
-Local default: `http://localhost:5173`. `Authorization`, `Content-Type` and
-`Accept` request headers are allowed.
+Local defaults: `http://localhost:5173` (Vite dev) and
+`http://localhost:4173` (Vite preview). `Authorization`, `Content-Type`,
+`Accept` and `X-Guest-Id` request headers are allowed.
 
 ## Limits
 
-- STL upload: 10MB (request 12MB)
+- STL upload: 100MB (request 102MB)
+- Quantity: 1–24
 - Status polling: keep it to roughly one request per 1–2 seconds

@@ -59,6 +59,7 @@ class UploadWorkerTest {
     Material m = new Material();
     m.setName("PLA");
     m.setCostPerGram(new BigDecimal("0.05"));
+    m.setDensity(new BigDecimal("1.24"));
     materialRepository.saveAndFlush(m);
 
     Upload u = new Upload();
@@ -83,13 +84,37 @@ class UploadWorkerTest {
     assertThat(u.getErrorMessage()).isNull();
     assertThat(u.getEstimatedPrice()).isNotNull();
 
-    // 1800s = 30min -> 15.00 * 30 / 60 = 7.50 ; + 2.00 base fee = 9.50 ; floor 7.50
-    // does not bite
-    assertThat(u.getEstimatedPrice()).isEqualByComparingTo("9.50");
-    assertThat(u.getPriceBreakdown()).hasSize(2);
+    // 1800s = 30min -> 15.00 * 30 / 60 = 7.50
+    // material 3.59cm3 * 1.24g/cm3 * 0.05/g = 0.22
+    // + 2.00 base fee = 9.72 ; floor 7.50 does not bite
+    assertThat(u.getEstimatedPrice()).isEqualByComparingTo("9.72");
+    assertThat(u.getPriceBreakdown()).hasSize(3);
     assertThat(u.getPriceBreakdown().get(0).label()).isEqualTo("Machine time");
     assertThat(u.getPriceBreakdown().get(0).amount()).isEqualByComparingTo("7.50");
-    assertThat(u.getPriceBreakdown().get(1).label()).isEqualTo("Base fee");
+    assertThat(u.getPriceBreakdown().get(1).label()).isEqualTo("Material cost");
+    assertThat(u.getPriceBreakdown().get(1).amount()).isEqualByComparingTo("0.22");
+    assertThat(u.getPriceBreakdown().get(2).label()).isEqualTo("Base fee");
+    assertThat(u.getPriceBreakdown().get(2).amount()).isEqualByComparingTo("2.00");
+  }
+
+  @Test
+  void quantityMultipliesMachineTimeButChargesBaseFeeOnce() {
+    Upload u = uploadRepository.findById(uploadId).orElseThrow();
+    u.setQuantity(3);
+    uploadRepository.saveAndFlush(u);
+
+    when(slicerRunner.slice(any(Path.class)))
+        .thenReturn(new SliceResult(1800L, new BigDecimal("3.59"), "2.7.0"));
+
+    worker.process(uploadId);
+
+    Upload done = uploadRepository.findById(uploadId).orElseThrow();
+    assertThat(done.getEstimatedPrice()).isEqualByComparingTo("25.17");
+    assertThat(done.getPriceBreakdown()).extracting(PriceLine::label)
+        .containsExactly("Machine time", "Material cost", "Base fee");
+    assertThat(done.getPriceBreakdown().get(0).amount()).isEqualByComparingTo("22.50");
+    assertThat(done.getPriceBreakdown().get(1).amount()).isEqualByComparingTo("0.67");
+    assertThat(done.getPriceBreakdown().get(2).amount()).isEqualByComparingTo("2.00");
   }
 
   @Test

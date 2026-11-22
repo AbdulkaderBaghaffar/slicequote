@@ -17,6 +17,12 @@ public class Material {
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal costPerGram;
 
+  @Column(nullable = false, precision = 10, scale = 3)
+  private BigDecimal density = new BigDecimal("1.24");
+
+  @Column(nullable = false)
+  private boolean active = true;
+
   public Material() {
 
   }
@@ -43,6 +49,22 @@ public class Material {
 
   public void setCostPerGram(BigDecimal costPerGram) {
     this.costPerGram = costPerGram;
+  }
+
+  public BigDecimal getDensity() {
+    return density;
+  }
+
+  public void setDensity(BigDecimal density) {
+    this.density = density;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
   }
 
 }

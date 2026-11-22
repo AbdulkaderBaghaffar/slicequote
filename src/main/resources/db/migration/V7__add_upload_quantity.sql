@@ -1,0 +1,1 @@
+ALTER TABLE upload ADD COLUMN quantity integer NOT NULL DEFAULT 1;

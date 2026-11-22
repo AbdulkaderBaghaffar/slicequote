@@ -9,6 +9,8 @@ public record UploadResponse(
     Long id,
     String originalFilename,
     Long materialId,
+    String materialName,
+    int quantity,
     UploadStatus status,
     BigDecimal estimatedPrice,
     String errorMessage,

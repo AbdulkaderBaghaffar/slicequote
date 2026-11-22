@@ -58,7 +58,7 @@ public class ApiExceptionHandler {
   @ExceptionHandler(MaxUploadSizeExceededException.class)
   @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
   public ApiError handleTooLarge() {
-    return new ApiError(413, "Payload Too Large", "File is too large (max 10MB)", "file");
+    return new ApiError(413, "Payload Too Large", "File is too large (max 100MB)", "file");
   }
 
   @ExceptionHandler(MissingServletRequestPartException.class)

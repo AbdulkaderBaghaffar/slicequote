@@ -28,6 +28,9 @@ public class Upload {
   private UploadStatus status = UploadStatus.PENDING;
   private String errorMessage;
 
+  @Column(nullable = false)
+  private Integer quantity = 1;
+
   private Long printSeconds;
   private BigDecimal filamentCm3;
   private String slicerVersion;
@@ -40,6 +43,8 @@ public class Upload {
   private Instant createdAt;
   private Long ownerId;
   private String storedFilename;
+  @Column(length = 64)
+  private String guestKey;
   @Convert(converter = PriceBreakdownConverter.class)
   @Column(columnDefinition = "varchar(4000)")
   private List<PriceLine> priceBreakdown;
@@ -77,6 +82,14 @@ public class Upload {
 
   public void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
+  }
+
+  public Integer getQuantity() {
+    return quantity;
+  }
+
+  public void setQuantity(Integer quantity) {
+    this.quantity = quantity;
   }
 
   public Long getPrintSeconds() {
@@ -141,6 +154,14 @@ public class Upload {
 
   public void setStoredFilename(String storedFilename) {
     this.storedFilename = storedFilename;
+  }
+
+  public String getGuestKey() {
+    return guestKey;
+  }
+
+  public void setGuestKey(String guestKey) {
+    this.guestKey = guestKey;
   }
 
   public List<PriceLine> getPriceBreakdown() {
