@@ -124,11 +124,12 @@ Uploads are limited to 12 MB at nginx, matching Spring's multipart limit.
 
 ## Deployment
 
-Pin image tags in production. CI publishes both images:
+Pin image tags in production. CI publishes both services as tags of a single
+package:
 
 ```text
-ghcr.io/abdulkaderbaghaffar/slicequote
-ghcr.io/abdulkaderbaghaffar/slicequote-web
+ghcr.io/abdulkaderbaghaffar/slicequote:latest   # API
+ghcr.io/abdulkaderbaghaffar/slicequote:web      # web frontend
 ```
 
 Typical rollout:

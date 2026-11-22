@@ -34,7 +34,7 @@ services:
       - ./data/uploads:/app/uploads
 
   web:
-    image: ghcr.io/abdulkaderbaghaffar/slicequote-web:latest
+    image: ghcr.io/abdulkaderbaghaffar/slicequote:web
     build:
       context: ./web
       args:

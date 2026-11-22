@@ -76,7 +76,7 @@ so production does not depend on browser CORS.
 If you build the image manually:
 
 ```bash
-docker build --build-arg VITE_API_URL=/api -t slicequote-web web
+docker build --build-arg VITE_API_URL=/api -t slicequote:web web
 ```
 
 
