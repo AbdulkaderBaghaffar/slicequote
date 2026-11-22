@@ -35,8 +35,8 @@ export function Landing() {
               Price your part <span className="accent">before you print it.</span>
             </h1>
             <p className="hero-sub">
-              Upload a spec, pick a material, and watch a live price form in seconds. No
-              back-and-forth, no waiting on a human estimate.
+              Upload an STL, set the material and quantity, and get an itemized
+              estimate from the slicing service.
             </p>
             <div className="hero-actions">
               <button className="btn btn-primary" type="button" onClick={() => navigate(quotePath)}>
@@ -105,7 +105,7 @@ export function Landing() {
           <div className="step">
             <span className="step-num">03</span>
             <h3>Get your price</h3>
-            <p>Watch material cost, weight, and print time recompute instantly — then send the quote.</p>
+            <p>See the machine time, material usage, and fees behind the total before you print.</p>
           </div>
         </div>
       </section>
@@ -140,7 +140,7 @@ export function Landing() {
         <div className="container cta-inner">
           <div>
             <h2>Ready to see your number?</h2>
-            <p>Start a quote in under a minute — no account required.</p>
+            <p>Price a model now. No account needed.</p>
           </div>
           <button className="btn btn-primary" type="button" onClick={() => navigate(quotePath)}>
             Start a quote
