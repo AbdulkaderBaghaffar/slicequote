@@ -58,13 +58,10 @@ html[data-theme="dark"] .theme-toggle .ic-moon { display: none; }
 .nav-cta { display: flex; align-items: center; gap: var(--space-3); }
 
 .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--space-7); align-items: center; padding-block: var(--space-8) var(--space-9); }
-.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--on-dark-muted); }
-.hero-eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-strong); box-shadow: 0 0 0 3px var(--accent-soft); }
 .hero h1 { color: var(--on-dark); font-size: clamp(36px, 5.4vw, 62px); margin: var(--space-4) 0; }
 .hero h1 .accent { color: var(--accent-strong); }
 .hero-sub { color: var(--on-dark-muted); font-size: 18px; line-height: 1.6; max-width: 46ch; margin-bottom: var(--space-6); }
 .hero-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
-.hero-note { margin-top: var(--space-4); font-family: var(--font-mono); font-size: 13px; color: var(--on-dark-muted); }
 
 .hero-visual { position: relative; display: grid; place-items: center; }
 .part-stage-hero { position: relative; width: min(100%, 460px); padding-bottom: 34px; }
@@ -106,7 +103,6 @@ html[data-theme="dark"] .theme-toggle .ic-moon { display: none; }
 .footer { padding-block: var(--space-6); border-top: 1px solid var(--line); background: var(--surface); }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 .footer .brand { color: var(--ink); }
-.footer small { color: var(--muted); font-size: 13px; }
 
 /* ===================== Auth / shell top bars ===================== */
 .app-bar { background: var(--surface); border-bottom: 1px solid var(--line); }

@@ -31,10 +31,6 @@ export function Landing() {
 
         <div className="container hero">
           <div>
-            <span className="hero-eyebrow">
-              <span className="dot" aria-hidden="true" />
-              Instant additive manufacturing quotes
-            </span>
             <h1 id="landing-title">
               Price your part <span className="accent">before you print it.</span>
             </h1>
@@ -51,7 +47,6 @@ export function Landing() {
                 See how it works
               </a>
             </div>
-            <p className="hero-note">Free to preview · pricing is a live demo estimate</p>
           </div>
 
           <div className="hero-visual" aria-hidden="true">
@@ -157,7 +152,6 @@ export function Landing() {
       <footer className="footer">
         <div className="container footer-inner">
           <Brand />
-          <small>Demo prototype — quotes are illustrative, not a binding offer.</small>
         </div>
       </footer>
     </section>
