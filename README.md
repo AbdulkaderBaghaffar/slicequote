@@ -64,8 +64,6 @@ Open <http://localhost:3000>.
 
 ## Tech Stack
 
-Our stack is built for accurate pricing, async slicing, and a small self-hosted footprint.
-
 | **Component** | **Technology** | **Description** |
 |---|---|---|
 | **Frontend** | <img src="https://skillicons.dev/icons?i=react,ts,vite,threejs" valign="middle" /> | React 19, TypeScript, Vite, and three.js power the quote flow, the UI, and the live 3D STL preview. |
